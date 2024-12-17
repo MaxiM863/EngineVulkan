@@ -295,7 +295,19 @@ add_library(Cookbook
 "../Library/Common_Files/Tools.h"
 "../Library/Common_Files/VulkanDestroyer.h"
 )
-add_definitions(-DVK_USE_PLATFORM_WIN32_KHR)
+
+if(WIN32)
+
+    add_definitions(-DVK_USE_PLATFORM_WIN32_KHR)
+
+endif(WIN32)
+
+if(UNIX)
+
+    add_definitions(-DVK_USE_PLATFORM_XLIB_KHR)
+
+endif(UNIX)
+
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set_target_properties(Cookbook PROPERTIES LINKER_LANGUAGE CXX)
