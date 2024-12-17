@@ -1,5 +1,3 @@
-#pragma once
-
 #include "CookbookSampleFramework.h"
 #include "OrbitingCamera.h"
 #include "ModelClass.h"
