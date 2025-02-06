@@ -502,38 +502,38 @@ private:
     }
 
     bool UpdateStagingBuffer( bool force ) {
-
-      /*if( MouseState.Buttons[0].IsPressed ) {
-        Camera.RotateHorizontally( 0.5f * MouseState.Position.Delta.X );
-        Camera.RotateVertically( -0.5f * MouseState.Position.Delta.Y );
-        force = true;
+    UpdateUniformBuffer = true;
+    static float horizontal_angle = 0.0f;
+    static float vertical_angle = 0.0f;
+    if( MouseState.Buttons[0].IsPressed ||
+        force ) {
+      horizontal_angle += 0.5f * MouseState.Position.Delta.X;
+      vertical_angle -= 0.5f * MouseState.Position.Delta.Y;
+      if( vertical_angle > 90.0f ) {
+        vertical_angle = 90.0f;
+      }
+      if( vertical_angle < -90.0f ) {
+        vertical_angle = -90.0f;
       }
 
-      if( MouseState.Wheel.WasMoved ) {
-        Camera.ChangeDistance( MouseState.Wheel.Distance );
-        force = true;
-      }*/
+      Matrix4x4 rotation_matrix = PrepareRotationMatrix( vertical_angle, { 1.0f, 0.0f, 0.0f } ) * PrepareRotationMatrix( horizontal_angle, { 0.0f, -1.0f, 0.0f } );
+      Matrix4x4 translation_matrix = PrepareTranslationMatrix( 0.0f, 0.0f, -4.0f );
+      Matrix4x4 model_view_matrix = translation_matrix * rotation_matrix;
 
-
-      if( force ) {
-        UpdateUniformBuffer = true;
-
-        Matrix4x4 model_view_matrix = Camera.GetMatrix();
-
-        if( !MapUpdateAndUnmapHostVisibleMemory( *LogicalDevice, *StagingBufferMemory, 0, sizeof( model_view_matrix[0] ) * model_view_matrix.size(), &model_view_matrix[0], true, nullptr ) ) {
-          return false;
-        }
-
-        Matrix4x4 perspective_matrix = PreparePerspectiveProjectionMatrix( static_cast<float>(Swapchain.Size.width) / static_cast<float>(Swapchain.Size.height),
-          50.0f, 0.5f, 15.0f );
-
-        if( !MapUpdateAndUnmapHostVisibleMemory( *LogicalDevice, *StagingBufferMemory, sizeof( model_view_matrix[0] ) * model_view_matrix.size(),
-          sizeof( perspective_matrix[0] ) * perspective_matrix.size(), &perspective_matrix[0], true, nullptr ) ) {
-          return false;
-        }
+      if( !MapUpdateAndUnmapHostVisibleMemory( *LogicalDevice, *StagingBufferMemory, 0, sizeof( model_view_matrix[0] ) * model_view_matrix.size(), &model_view_matrix[0], true, nullptr ) ) {
+        return false;
       }
-      return true;
+
+      Matrix4x4 perspective_matrix = PreparePerspectiveProjectionMatrix( static_cast<float>(Swapchain.Size.width) / static_cast<float>(Swapchain.Size.height),
+        50.0f, 0.5f, 10.0f );
+
+      if( !MapUpdateAndUnmapHostVisibleMemory( *LogicalDevice, *StagingBufferMemory, sizeof( model_view_matrix[0] ) * model_view_matrix.size(),
+        sizeof( perspective_matrix[0] ) * perspective_matrix.size(), &perspective_matrix[0], true, nullptr ) ) {
+        return false;
+      }
     }
+    return true;
+  }
 
     bool Resize()
     {
