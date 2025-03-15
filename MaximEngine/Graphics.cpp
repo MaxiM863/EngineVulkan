@@ -73,7 +73,7 @@ private:
       }
 
       // Vertex data
-      if( !Load3DModelFromObjFile( "Data/Models/earth.obj", true, false, false, true, Model ) ) {
+      if( !Load3DModelFromObjFile( "Data/Models/chess_pion.obj", true, false, false, true, Model ) ) {
         return false;
       }
 
