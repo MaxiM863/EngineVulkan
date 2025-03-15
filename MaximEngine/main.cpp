@@ -37,7 +37,37 @@
 #include "CookbookSampleFramework.h"
 #include "Graphics.cpp"
 
+#include <fstream>
+#include <iostream>
+#include <vector>
+#include <string>
+#include <filesystem>
+
 using namespace VulkanCookbook;
+using namespace std;
+
+std::vector<std::string> get_filenames( std::filesystem::path path )
+{
+	std::vector<std::string> data;
+
+    namespace fs = std::filesystem;
+
+	const fs::path pathToShow{ "." };
+
+	for (const auto& entry : fs::directory_iterator(pathToShow)) {
+		const auto filenameStr = entry.path().filename().string();
+		if (entry.is_directory()) {
+			//std::cout << "dir:  " << filenameStr << '\n';
+		}
+		else if (entry.is_regular_file()) {
+			data.push_back(filenameStr);
+		}
+		//else
+        	//std::cout << "??    " << filenameStr << '\n';
+	}
+
+	return data;
+}
 
 int main(void) {
 
@@ -47,5 +77,5 @@ int main(void) {
 
 	window.Render();
 
-	return 1;
+	return 0;
 }
