@@ -3,30 +3,23 @@
 
 #include<vector>
 
-struct Position
-{
-    Position(){}
-    Position(int x, int y) { xPos = x; yPos = y; }
-
-    int xPos;
-    int yPos;
-};
+#include "ChessCase.h"
 
 struct TreeNode
 {
     TreeNode(){}
-    TreeNode(TreeNode* _parent, std::vector<TreeNode*> _childs, Position position)
+    TreeNode(TreeNode* _parent, int nbrChilds, ChessCase* caseD)
     {
         parent = _parent;
-        childs = _childs;
-        positionBoard = position;
+        childs = new TreeNode*[nbrChilds];
+        caseData = caseD;
         valeurChild = 0;
     }
 
     TreeNode* parent;
-    std::vector<TreeNode*> childs;
+    TreeNode** childs;
 
-    Position positionBoard;
+    ChessCase* caseData;
 
     int valeurChild;
 };

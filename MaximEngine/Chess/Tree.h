@@ -1,19 +1,21 @@
 #include "TreeNode.h"
+#include "ChessBoard.h"
 
-#define MAX_NODES 1000000
+#define MAX_NODES 10000000
+#define BOARD_SIZE 8
 
 class Tree {
 
     public:
 
-        Tree(int boardSize) { top = new TreeNode(nullptr, std::vector<TreeNode*>(), Position(-1, -1)); this->boardSize = boardSize; }
+        Tree(int availablePossibility) { top = new TreeNode(nullptr, availablePossibility , new ChessCase()); }
 
         TreeNode* getTopTree() { return top; }
 
-        void addLevel(std::vector<Position> botPlayed, std::vector<Position> plyPlayed)
+        void addLevel(std::vector<Position> botPlayed, std::vector<Position> plyPlayed, int maxLevel, ChessBoard* board)
         {
 
-            recursiveAddNode(top, botPlayed, plyPlayed, 0);
+            recursiveAddNode(top, botPlayed, plyPlayed, 0, maxLevel, board);
         }
 
         int getTreeDepth() 
@@ -39,7 +41,7 @@ class Tree {
             }
         }
 
-        void recursiveAddNode(TreeNode* actual, std::vector<Position> botPlayed, std::vector<Position> plyPlayed, int level)
+        void recursiveAddNode(TreeNode* actual, std::vector<Position> botPlayed, std::vector<Position> plyPlayed, int level, int maxLevel, ChessBoard* board)
         {
 
             if(actual->childs.size() == 0)
@@ -105,8 +107,13 @@ class Tree {
             }
         }
 
+        ChessCase* getPossiblities(int& nbrPossibilities, ChessBoard* board)
+        {
+
+            
+        }
+
     private:
 
         TreeNode* top;
-        int boardSize;
 };

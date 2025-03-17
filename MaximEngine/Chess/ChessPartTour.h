@@ -1,10 +1,10 @@
 #include "ChessPart.h"
 
-class ChessPartPion : public ChessPart
+class ChessPartTour : public ChessPart
 {
     public:
 
-        ChessPartPion(){}
+        ChessPartTour(){}
 
         std::vector<int> deplacementPossible() override {
 
@@ -14,6 +14,7 @@ class ChessPartPion : public ChessPart
 
             //ChessPart::m_model;
         }
+        
     private:
 
 };
