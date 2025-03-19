@@ -22,7 +22,7 @@
 //
 // Vulkan Cookbook
 // ISBN: 9781786468154
-// © Packt Publishing Limited
+// ï¿½ Packt Publishing Limited
 //
 // Author:   Pawel Lapinski
 // LinkedIn: https://www.linkedin.com/in/pawel-lapinski-84522329
@@ -85,7 +85,7 @@ namespace VulkanCookbook {
   }
 
   VK_DESTROYER_SPECIALIZATION( VkSemaphore, vkDestroySemaphore )
-  // VK_DESTROYER_SPECIALIZATION( VkCommandBuffer, vkFreeCommandBuffers ) <- command buffers are freed along with the pool
+  //VK_DESTROYER_SPECIALIZATION( VkCommandBuffer, vkFreeCommandBuffers ) <- command buffers are freed along with the pool
   VK_DESTROYER_SPECIALIZATION( VkFence, vkDestroyFence )
   VK_DESTROYER_SPECIALIZATION( VkDeviceMemory, vkFreeMemory )
   VK_DESTROYER_SPECIALIZATION( VkBuffer, vkDestroyBuffer )
@@ -140,6 +140,7 @@ namespace VulkanCookbook {
       other.DestroyerFunction = nullptr;
     }
 
+    
     VkDestroyer& operator=( VkDestroyer<VkTypeWrapper> && other ) {
       if( this != &other ) {
         VkTypeWrapper object = Object;

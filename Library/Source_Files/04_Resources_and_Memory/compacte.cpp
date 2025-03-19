@@ -45,6 +45,8 @@ namespace VulkanCookbook {
       nullptr                                 // const uint32_t       * pQueueFamilyIndices
     };
 
+    //VkBuffer* buffer2 = &buffer;
+
     VkResult result = vkCreateBuffer( logical_device, &buffer_create_info, nullptr, &buffer );
     if( VK_SUCCESS != result ) {
       std::cout << "Could not create a buffer." << std::endl;
@@ -109,7 +111,9 @@ namespace VulkanCookbook {
           type                                      // uint32_t           memoryTypeIndex
         };
 
-        VkResult result = vkAllocateMemory( logical_device, &buffer_memory_allocate_info, nullptr, &memory_object );
+        VkDeviceMemory* k = &memory_object;
+
+        VkResult result = vkAllocateMemory( logical_device, &buffer_memory_allocate_info, nullptr, k );
         if( VK_SUCCESS == result ) {
           break;
         }

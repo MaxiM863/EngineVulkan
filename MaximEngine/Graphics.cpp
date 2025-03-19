@@ -6,8 +6,8 @@ using namespace VulkanCookbook;
 class Graphics : public VulkanCookbook::VulkanCookbookSample
 {
 
-VkDestroyer(VkBuffer)               VertexBuffer;
-VkDestroyer(VkDeviceMemory)         VertexBufferMemory;
+std::vector<VkBuffer>         vectorVertexBuffer;
+std::vector<VkDeviceMemory>   vectorVertexBufferMemory;
 
 VkDestroyer(VkBuffer)               VertexBuffer2;
 VkDestroyer(VkDeviceMemory)         VertexBufferMemory2;
@@ -40,7 +40,8 @@ bool                                UpdateUniformBuffer;
 VkDestroyer(VkBuffer)               UniformBuffer;
 VkDestroyer(VkDeviceMemory)         UniformBufferMemory;
 
-Mesh                                Model;
+std::vector<Mesh> Model;
+//ChessBoard*                          board;
 
 OrbitingCamera                      Camera;
 
@@ -66,37 +67,65 @@ private:
     bool Initialize(WindowParameters window_parameters)
     {
 
-      Camera = OrbitingCamera( Vector3{ 0.0f, 0.6f, 0.0f }, 4.0f );
+      Camera = OrbitingCamera( Vector3{ 0.0f, 0.6f, 0.0f }, 6.0f );
 
       if( !InitializeVulkan( window_parameters ) ) {
         return false;
       }
 
       // Vertex data
-      if( !Load3DModelFromObjFile( "Data/Models/chess_pion.obj", true, false, false, true, Model ) ) {
+      /*if( !Load3DModelFromObjFile( "Data/Models/chess_pion.obj", true, false, false, true, Model ) ) {
         return false;
+      }*/
+
+      //board = new ChessBoard();
+
+      //ChessPartTour tour;
+      //tour.loadModel();
+      Mesh a;
+      Load3DModelFromObjFile( "Data/Models/chess_pion.obj", true, false, false, true, a );
+
+      int g = 0;
+      
+
+      for(int i = 0; i < 64; i++)
+      {          
+          Model.push_back(a);
+          int a = 0;
       }
 
-      InitVkDestroyer( LogicalDevice, VertexBuffer );
-      if( !CreateBuffer( *LogicalDevice, sizeof( Model.Data[0] ) * Model.Data.size(),
-        VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, *VertexBuffer ) ) {
-        return false;
+      for(int i = 0; i < Model.size(); i++)
+      {
+        VkBuffer tmpB;
+        vectorVertexBuffer.push_back(tmpB);
+
+        //InitVkDestroyer( LogicalDevice, vectorVertexBuffer );
+        if( !CreateBuffer( *LogicalDevice, sizeof( float ) * Model.at(i).Data.size(),
+          VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, vectorVertexBuffer.at(i) ) ) {
+          return false;
+        }
+
+        
+        int a = 0;
+        VkDeviceMemory tmpB2;
+        vectorVertexBufferMemory.push_back(tmpB2);   
+
+        //InitVkDestroyer( LogicalDevice, *vectorVertexBufferMemory.at(i) );
+        if( !AllocateAndBindMemoryObjectToBuffer( PhysicalDevice, *LogicalDevice, vectorVertexBuffer.at(i), VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vectorVertexBufferMemory.at(i) ) ) {
+          return false;
+        }
+
+        if( !UseStagingBufferToUpdateBufferWithDeviceLocalMemoryBound( PhysicalDevice, *LogicalDevice, sizeof( Model.at(i).Data[0] ) * Model.at(i).Data.size(),
+          &Model.at(i).Data[0], vectorVertexBuffer.at(i), 0, 0, VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
+          GraphicsQueue.Handle, FramesResources.front().CommandBuffer.at(i), {} ) ) {
+          return false;
+        }
       }
 
-      InitVkDestroyer( LogicalDevice, VertexBufferMemory );
-      if( !AllocateAndBindMemoryObjectToBuffer( PhysicalDevice, *LogicalDevice, *VertexBuffer, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, *VertexBufferMemory ) ) {
-        return false;
-      }
-
-      if( !UseStagingBufferToUpdateBufferWithDeviceLocalMemoryBound( PhysicalDevice, *LogicalDevice, sizeof( Model.Data[0] ) * Model.Data.size(),
-        &Model.Data[0], *VertexBuffer, 0, 0, VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
-        GraphicsQueue.Handle, FramesResources.front().CommandBuffer, {} ) ) {
-        return false;
-      }
-
+      
       // Staging buffer
       InitVkDestroyer( LogicalDevice, StagingBuffer );
-      if( !CreateBuffer( *LogicalDevice, 2 * 16 * sizeof(float), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, *StagingBuffer ) ) {
+      if( !CreateBuffer( *LogicalDevice, (64 + 2) * 16 * sizeof(float), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, *StagingBuffer ) ) {
         return false;
       }
       InitVkDestroyer( LogicalDevice, StagingBufferMemory );
@@ -107,7 +136,7 @@ private:
       // Uniform buffer
       InitVkDestroyer( LogicalDevice, UniformBuffer );
       InitVkDestroyer( LogicalDevice, UniformBufferMemory );
-      if( !CreateUniformBuffer( PhysicalDevice, *LogicalDevice, 2 * 16 * sizeof( float ), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+      if( !CreateUniformBuffer( PhysicalDevice, *LogicalDevice, (64 + 2) * 16 * sizeof( float ), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
         *UniformBuffer, *UniformBufferMemory ) ) {
         return false;
       }
@@ -385,40 +414,50 @@ private:
 
     virtual bool Draw() override {
       
-      auto prepare_frame = [&]( VkCommandBuffer command_buffer, uint32_t swapchain_image_index, VkFramebuffer framebuffer ) {
-        if( !BeginCommandBufferRecordingOperation( command_buffer, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, nullptr ) ) {
+      auto prepare_frame = [&]( std::vector<VkCommandBuffer> command_buffer, uint32_t swapchain_image_index, VkFramebuffer framebuffer ) {
+        
+
+
+        for(int i = 0; i < command_buffer.size(); i++)
+        {
+          
+          if( !BeginCommandBufferRecordingOperation( command_buffer[i], VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, nullptr ) ) {
           return false;
-        }
-
+          }
+        
         if( UpdateUniformBuffer ) {
-          UpdateUniformBuffer = false;
 
-          BufferTransition pre_transfer_transition = {
-            *UniformBuffer,               // VkBuffer         Buffer
-            VK_ACCESS_UNIFORM_READ_BIT,   // VkAccessFlags    CurrentAccess
-            VK_ACCESS_TRANSFER_WRITE_BIT, // VkAccessFlags    NewAccess
-            VK_QUEUE_FAMILY_IGNORED,      // uint32_t         CurrentQueueFamily
-            VK_QUEUE_FAMILY_IGNORED       // uint32_t         NewQueueFamily
-          };
-          SetBufferMemoryBarrier( command_buffer, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, { pre_transfer_transition } );
+          for(int ii = 0; ii < Model.size(); ii++)
+          {
+            UpdateUniformBuffer = false;
 
-          std::vector<VkBufferCopy> regions = {
-            {
-              0,                        // VkDeviceSize     srcOffset
-              0,                        // VkDeviceSize     dstOffset
-              2 * 16 * sizeof( float )  // VkDeviceSize     size
-            }
-          };
-          CopyDataBetweenBuffers( command_buffer, *StagingBuffer, *UniformBuffer, regions );
+            BufferTransition pre_transfer_transition = {
+              *UniformBuffer,               // VkBuffer         Buffer
+              VK_ACCESS_UNIFORM_READ_BIT,   // VkAccessFlags    CurrentAccess
+              VK_ACCESS_TRANSFER_WRITE_BIT, // VkAccessFlags    NewAccess
+              VK_QUEUE_FAMILY_IGNORED,      // uint32_t         CurrentQueueFamily
+              VK_QUEUE_FAMILY_IGNORED       // uint32_t         NewQueueFamily
+            };
+            SetBufferMemoryBarrier( command_buffer[i], VK_PIPELINE_STAGE_VERTEX_SHADER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, { pre_transfer_transition } );
 
-          BufferTransition post_transfer_transition = {
-            *UniformBuffer,               // VkBuffer         Buffer
-            VK_ACCESS_TRANSFER_WRITE_BIT, // VkAccessFlags    CurrentAccess
-            VK_ACCESS_UNIFORM_READ_BIT,   // VkAccessFlags    NewAccess
-            VK_QUEUE_FAMILY_IGNORED,      // uint32_t         CurrentQueueFamily
-            VK_QUEUE_FAMILY_IGNORED       // uint32_t         NewQueueFamily
-          };
-          SetBufferMemoryBarrier( command_buffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT, { post_transfer_transition } );
+            std::vector<VkBufferCopy> regions = {
+              {
+                ii*(2*16*sizeof(float)),                        // VkDeviceSize     srcOffset
+                ii*(2*16*sizeof(float)),                        // VkDeviceSize     dstOffset
+                2 * 16 * sizeof( float )  // VkDeviceSize     size
+              }
+            };
+            CopyDataBetweenBuffers( command_buffer[i], *StagingBuffer, *UniformBuffer, regions );
+
+            BufferTransition post_transfer_transition = {
+              *UniformBuffer,               // VkBuffer         Buffer
+              VK_ACCESS_TRANSFER_WRITE_BIT, // VkAccessFlags    CurrentAccess
+              VK_ACCESS_UNIFORM_READ_BIT,   // VkAccessFlags    NewAccess
+              VK_QUEUE_FAMILY_IGNORED,      // uint32_t         CurrentQueueFamily
+              VK_QUEUE_FAMILY_IGNORED       // uint32_t         NewQueueFamily
+            };
+            SetBufferMemoryBarrier( command_buffer[i], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT, { post_transfer_transition } );
+          }
         }
 
         if( PresentQueue.FamilyIndex != GraphicsQueue.FamilyIndex ) {
@@ -432,11 +471,11 @@ private:
             GraphicsQueue.FamilyIndex,                // uint32_t             NewQueueFamily
             VK_IMAGE_ASPECT_COLOR_BIT                 // VkImageAspectFlags   Aspect
           };
-          SetImageMemoryBarrier( command_buffer, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, { image_transition_before_drawing } );
+          SetImageMemoryBarrier( command_buffer[i], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, { image_transition_before_drawing } );
         }
 
         // Drawing
-        BeginRenderPass( command_buffer, *RenderPass, framebuffer, { { 0, 0 }, Swapchain.Size }, { { 0.1f, 0.2f, 0.3f, 1.0f }, { 1.0f, 0 } }, VK_SUBPASS_CONTENTS_INLINE );
+        BeginRenderPass( command_buffer[i], *RenderPass, framebuffer, { { 0, 0 }, Swapchain.Size }, { { 0.1f, 0.2f, 0.3f, 1.0f }, { 1.0f, 0 } }, VK_SUBPASS_CONTENTS_INLINE );
 
         VkViewport viewport = {
           0.0f,                                       // float    x
@@ -446,7 +485,7 @@ private:
           0.0f,                                       // float    minDepth
           1.0f,                                       // float    maxDepth
         };
-        SetViewportStateDynamically( command_buffer, 0, { viewport } );
+        SetViewportStateDynamically( command_buffer[i], 0, { viewport } );
 
         VkRect2D scissor = {
           {                                           // VkOffset2D     offset
@@ -458,19 +497,22 @@ private:
             Swapchain.Size.height                       // uint32_t       height
           }
         };
-        SetScissorStateDynamically( command_buffer, 0, { scissor } );
+        SetScissorStateDynamically( command_buffer[i], 0, { scissor } );
 
-        BindVertexBuffers( command_buffer, 0, { { *VertexBuffer, 0 } } );
+        
+        BindVertexBuffers( command_buffer[i], 0, { { vectorVertexBuffer.at(i), 0 } } ); //// lier command et Model
 
-        BindDescriptorSets( command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, *PipelineLayout, 0, DescriptorSets, {} );
+        BindDescriptorSets( command_buffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, *PipelineLayout, 0, DescriptorSets, {} );
 
-        BindPipelineObject( command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, *Pipeline );
+        BindPipelineObject( command_buffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, *Pipeline );
 
-        for( size_t i = 0; i < Model.Parts.size(); ++i ) {
-          DrawGeometry( command_buffer, Model.Parts[i].VertexCount, 1, Model.Parts[i].VertexOffset, 0 );
-        }
+        for( size_t j = 0; j < Model.at(i).Parts.size(); ++j ) {
 
-        EndRenderPass( command_buffer );
+          DrawGeometry( command_buffer[i], Model.at(i).Parts[j].VertexCount, 1, Model.at(i).Parts[j].VertexOffset, 0 );
+        }    
+        
+
+        EndRenderPass( command_buffer[i] );
 
         if( PresentQueue.FamilyIndex != GraphicsQueue.FamilyIndex ) {
           ImageTransition image_transition_before_present = {
@@ -483,12 +525,13 @@ private:
             PresentQueue.FamilyIndex,                 // uint32_t             NewQueueFamily
             VK_IMAGE_ASPECT_COLOR_BIT                 // VkImageAspectFlags   Aspect
           };
-          SetImageMemoryBarrier( command_buffer, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, { image_transition_before_present } );
+          SetImageMemoryBarrier( command_buffer[i], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, { image_transition_before_present } );
         }
 
-        if( !EndCommandBufferRecordingOperation( command_buffer ) ) {
+        if( !EndCommandBufferRecordingOperation( command_buffer[i] ) ) {
           return false;
         }
+      }
         return true;
       };
 
@@ -520,16 +563,20 @@ private:
       Matrix4x4 translation_matrix = PrepareTranslationMatrix( 0.0f, 0.0f, -4.0f );
       Matrix4x4 model_view_matrix = translation_matrix * rotation_matrix;
 
-      if( !MapUpdateAndUnmapHostVisibleMemory( *LogicalDevice, *StagingBufferMemory, 0, sizeof( model_view_matrix[0] ) * model_view_matrix.size(), &model_view_matrix[0], true, nullptr ) ) {
-        return false;
-      }
+      for(int i = 0; i < 32; i++)
+      {
 
-      Matrix4x4 perspective_matrix = PreparePerspectiveProjectionMatrix( static_cast<float>(Swapchain.Size.width) / static_cast<float>(Swapchain.Size.height),
-        50.0f, 0.5f, 10.0f );
+        if( !MapUpdateAndUnmapHostVisibleMemory( *LogicalDevice, *StagingBufferMemory, (2*i+0) * sizeof( model_view_matrix[0] ) * model_view_matrix.size(), sizeof( model_view_matrix[0] ) * model_view_matrix.size(), &model_view_matrix[0], true, nullptr ) ) {
+          return false;
+        }
 
-      if( !MapUpdateAndUnmapHostVisibleMemory( *LogicalDevice, *StagingBufferMemory, sizeof( model_view_matrix[0] ) * model_view_matrix.size(),
-        sizeof( perspective_matrix[0] ) * perspective_matrix.size(), &perspective_matrix[0], true, nullptr ) ) {
-        return false;
+        Matrix4x4 perspective_matrix = PreparePerspectiveProjectionMatrix( static_cast<float>(Swapchain.Size.width) / static_cast<float>(Swapchain.Size.height),
+          50.0f, 0.5f, 10.0f );
+
+        if( !MapUpdateAndUnmapHostVisibleMemory( *LogicalDevice, *StagingBufferMemory, (2*i+1) * sizeof( model_view_matrix[0] ) * model_view_matrix.size(),
+          sizeof( perspective_matrix[0] ) * perspective_matrix.size(), &perspective_matrix[0], true, nullptr ) ) {
+          return false;
+        }
       }
     }
     return true;

@@ -1,20 +1,22 @@
-#include "ChessPart.h"
-
-class ChessPartTour : public ChessPart
+class ChessPartTour
 {
     public:
 
-        ChessPartTour(){}
-
-        std::vector<int> deplacementPossible() override {
-
+        ChessPartTour(){
         }
 
-        void loadModel() override {
+        std::vector<int> deplacementPossible() {
 
-            //ChessPart::m_model;
+            return std::vector<int>();
+        }
+
+        void loadModel() {
+
+            Load3DModelFromObjFile( "Data/Models/chess_tour.obj", true, false, false, false, m_model );
         }
         
+        VulkanCookbook::Mesh m_model;
+
     private:
 
 };

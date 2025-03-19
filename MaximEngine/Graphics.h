@@ -3,7 +3,4 @@
 #include "CookbookSampleFramework.h"
 #include "OrbitingCamera.h"
 #include "Scene.h"
-
-
-
-
+#include "Chess/ChessBoard.h"

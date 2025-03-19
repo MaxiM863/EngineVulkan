@@ -22,7 +22,7 @@
 //
 // Vulkan Cookbook
 // ISBN: 9781786468154
-// © Packt Publishing Limited
+// ï¿½ Packt Publishing Limited
 //
 // Author:   Pawel Lapinski
 // LinkedIn: https://www.linkedin.com/in/pawel-lapinski-84522329
@@ -223,7 +223,7 @@ namespace VulkanCookbook {
       VkDestroyer(VkImageView) depth_attachment;
       InitVkDestroyer( LogicalDevice, depth_attachment );
 
-      if( !AllocateCommandBuffers( *LogicalDevice, *CommandPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY, 1, command_buffer ) ) {
+      if( !AllocateCommandBuffers( *LogicalDevice, *CommandPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY, 64, command_buffer ) ) {
         return false;
       }
       if( !CreateSemaphore( *LogicalDevice, *image_acquired_semaphore ) ) {
@@ -236,11 +236,11 @@ namespace VulkanCookbook {
         return false;
       }
       
-      VkCommandBuffer* ptr = &command_buffer[0];
+      //std::vector<VkCommandBuffer>* ptr = &command_buffer;
       //VkDestroyer<VkFramebuffer> ptr2 = (VkDestroyer(VkFramebuffer)());
 
       FramesResources.emplace_back(
-        *ptr,
+        ( command_buffer ),
         ( image_acquired_semaphore ),
         ( ready_to_present_semaphore ),
         ( drawing_finished_fence ),

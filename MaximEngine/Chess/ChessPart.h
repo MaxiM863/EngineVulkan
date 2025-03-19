@@ -3,16 +3,18 @@
 
 #include<vector>
 
-#include "ChessCase.h"
+
 
 #include "CookbookSampleFramework.h"
 
-class ChessPart : ChessCase
+class ChessPart
 {
     public:
 
         ChessPart(){};
         ChessPart(ChessPart* part){ m_part = part;}
+
+        bool isEmptyOfPart() { return false; }
 
         virtual std::vector<int> deplacementPossible() = 0;
 

@@ -843,8 +843,8 @@ namespace VulkanCookbook {
                                       VkSemaphore                                                     image_acquired_semaphore,
                                       VkSemaphore                                                     ready_to_present_semaphore,
                                       VkFence                                                         finished_drawing_fence,
-                                      std::function<bool(VkCommandBuffer, uint32_t, VkFramebuffer)>   record_command_buffer,
-                                      VkCommandBuffer                                                 command_buffer,
+                                      std::function<bool(std::vector<VkCommandBuffer>, uint32_t, VkFramebuffer)>   record_command_buffer,
+                                      std::vector<VkCommandBuffer>                                  command_buffer,
                                       VkRenderPass                                                    render_pass,
                                       VkDestroyer(VkFramebuffer)                                    & framebuffer ) {
     uint32_t image_index;
@@ -861,18 +861,20 @@ namespace VulkanCookbook {
     }
 
     if( !record_command_buffer( command_buffer, image_index, *framebuffer ) ) {
-      return false;
-    }
+        return false;
+      }
+    
 
     std::vector<WaitSemaphoreInfo> wait_semaphore_infos = wait_infos;
     wait_semaphore_infos.push_back( {
       image_acquired_semaphore,                     // VkSemaphore            Semaphore
       VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT // VkPipelineStageFlags   WaitingStage
     } );
-    if( !SubmitCommandBuffersToQueue( graphics_queue, wait_semaphore_infos, { command_buffer }, { ready_to_present_semaphore }, finished_drawing_fence ) ) {
+
+    if( !SubmitCommandBuffersToQueue( graphics_queue, wait_semaphore_infos, command_buffer, { ready_to_present_semaphore }, finished_drawing_fence ) ) {
       return false;
     }
-
+    
     PresentInfo present_info = {
       swapchain,                                    // VkSwapchainKHR         Swapchain
       image_index                                   // uint32_t               ImageIndex
@@ -928,7 +930,7 @@ namespace VulkanCookbook {
                                                                                 std::vector<VkImageView> const                                & swapchain_image_views,
                                                                                 VkRenderPass                                                    render_pass,
                                                                                 std::vector<WaitSemaphoreInfo> const                          & wait_infos,
-                                                                                std::function<bool(VkCommandBuffer, uint32_t, VkFramebuffer)>   record_command_buffer,
+                                                                                std::function<bool(std::vector<VkCommandBuffer>, uint32_t, VkFramebuffer)>   record_command_buffer,
                                                                                 std::vector<FrameResources>                                   & frame_resources ) {
     static uint32_t frame_index = 0;
     FrameResources & current_frame = frame_resources[frame_index];
