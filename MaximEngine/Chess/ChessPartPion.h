@@ -1,20 +1,27 @@
 #include "ChessPart.h"
+#include "ChessMesh.h"
 
 class ChessPartPion : public ChessPart
 {
     public:
 
-        ChessPartPion(){}
+        ChessPartPion(ChessMesh meshList){
+
+            m_model = &meshList.m_Pion;
+        }
 
         std::vector<int> deplacementPossible() override {
             
             return std::vector<int>();
         }
 
-        void loadModel() override {
+        int getBufferDraw() override { return bufferDraw; }
+             
+        VulkanCookbook::Mesh* m_model;
 
-            Load3DModelFromObjFile( "Data/Models/chess_pion.obj", true, false, false, true, m_model );
-        }
+        
+
     private:
 
+        int bufferDraw = 0;
 };

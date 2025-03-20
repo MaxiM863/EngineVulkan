@@ -41,7 +41,12 @@ VkDestroyer(VkBuffer)               UniformBuffer;
 VkDestroyer(VkDeviceMemory)         UniformBufferMemory;
 
 std::vector<Mesh> Model;
-//ChessBoard*                          board;
+
+///////////////////////////////////////////////////////////////
+
+ChessBoard                          board;
+
+///////////////////////////////////////////////////////////////
 
 OrbitingCamera                      Camera;
 
@@ -69,34 +74,14 @@ private:
     bool Initialize(WindowParameters window_parameters)
     {
 
-      Camera = OrbitingCamera( Vector3{ 0.0f, 0.6f, 0.0f }, 35.0f );
+      Camera = OrbitingCamera( Vector3{ -6.0f, 0.0f, -6.0f }, 20.0f, 0.0f, -135.0f );
 
       if( !InitializeVulkan( window_parameters ) ) {
         return false;
       }
       
-      rotMax = 0.0f;
-
-      // Vertex data
-      /*if( !Load3DModelFromObjFile( "Data/Models/chess_pion.obj", true, false, false, true, Model ) ) {
-        return false;
-      }*/
-
-      //board = new ChessBoard();
-
-      //ChessPartTour tour;
-      //tour.loadModel();
-      Mesh a;
-      Load3DModelFromObjFile( "Data/Models/chess_pion.obj", true, false, false, true, a );
-
-      int g = 0;
-      
-
-      for(int i = 0; i < 64; i++)
-      {          
-          Model.push_back(a);
-          int a = 0;
-      }
+      Model.push_back(board.meshes.m_Pion);
+      Model.push_back(board.meshes.m_Tour);
 
       for(int i = 0; i < Model.size(); i++)
       {
@@ -129,7 +114,7 @@ private:
       
       // Staging buffer
       InitVkDestroyer( LogicalDevice, StagingBuffer );
-      if( !CreateBuffer( *LogicalDevice, (64 + 2) * 16 * sizeof(float), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, *StagingBuffer ) ) {
+      if( !CreateBuffer( *LogicalDevice, 64 * 2 * 16 * sizeof(float), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, *StagingBuffer ) ) {
         return false;
       }
       InitVkDestroyer( LogicalDevice, StagingBufferMemory );
@@ -140,7 +125,7 @@ private:
       // Uniform buffer
       InitVkDestroyer( LogicalDevice, UniformBuffer );
       InitVkDestroyer( LogicalDevice, UniformBufferMemory );
-      if( !CreateUniformBuffer( PhysicalDevice, *LogicalDevice, 2 * 16 * sizeof( float ), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+      if( !CreateUniformBuffer( PhysicalDevice, *LogicalDevice, 64 * 2 * 16 * sizeof( float ), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
         *UniformBuffer, *UniformBufferMemory ) ) {
         return false;
       }
@@ -429,7 +414,7 @@ private:
           return false;
           }
         
-        if( true) {
+        if( UpdateUniformBuffer ) {
 
           
             UpdateUniformBuffer = false;
@@ -500,30 +485,34 @@ private:
             Swapchain.Size.height                       // uint32_t       height
           }
         };
+        
         SetScissorStateDynamically( command_buffer[i], 0, { scissor } );
 
-        for(int ii = 0; ii < 64; ii++)
+        for(int z = 0; z < 8; z++)
         {
 
-          BindVertexBuffers( command_buffer[i], 0, { { vectorVertexBuffer.at(ii), 0 } } );
-          
-          std::vector<uint32_t> aa;
-
-          for(int iii = 0; iii < 1; iii++)
+          for(int m = 0; m < 8; m++)
           {
-          
-            uint32_t aaa = ii * 2 * 16 * sizeof(float);
-            aa.push_back(aaa);
-          }
 
-          BindDescriptorSets( command_buffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, *PipelineLayout, 0, DescriptorSets, aa );
+            ChessPart* part = board.getCaseBoard(z, m);
 
-          BindPipelineObject( command_buffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, *Pipeline );
+            if(part != nullptr)
+            {
 
-          for( size_t j = 0; j < Model.at(ii).Parts.size(); ++j ) {
+              BindVertexBuffers( command_buffer[i], 0, { { vectorVertexBuffer.at(part->getBufferDraw()), 0 } } );
+              
+              uint32_t aaa = (8 * m + z) * 2 * 16 * sizeof(float);
+              
+              BindDescriptorSets( command_buffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, *PipelineLayout, 0, DescriptorSets, { aaa } );
 
-            DrawGeometry( command_buffer[i], Model.at(ii).Parts[j].VertexCount, 1, Model.at(ii).Parts[j].VertexOffset, 0 );
-          }    
+              BindPipelineObject( command_buffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, *Pipeline );
+
+              for( size_t j = 0; j < Model.at(part->getBufferDraw()).Parts.size(); ++j ) {
+
+                DrawGeometry( command_buffer[i], Model.at(part->getBufferDraw()).Parts[j].VertexCount, 1, Model.at(part->getBufferDraw()).Parts[j].VertexOffset, 0 );
+              }
+            }  
+          }  
 
         }
         
@@ -557,54 +546,43 @@ private:
 
     void OnMouseEvent()
     {
-        UpdateStagingBuffer(true);
+        UpdateStagingBuffer(false);
     }
 
     bool UpdateStagingBuffer( bool force ) {
-    UpdateUniformBuffer = true;
-    static float horizontal_angle = 0.0f;
-    static float vertical_angle = 0.0f;
-    if( MouseState.Buttons[0].IsPressed ||
-        force ) {
-      horizontal_angle += 0.5f * MouseState.Position.Delta.X;
-      vertical_angle -= 0.5f * MouseState.Position.Delta.Y;
-      if( vertical_angle > 90.0f ) {
-        vertical_angle = 90.0f;
-      }
-      if( vertical_angle < -90.0f ) {
-        vertical_angle = -90.0f;
-      }
-
-      
-
-      for(int i = 0; i < 32; i++)
+    
+      if(force)
       {
-        float t = rotMax;
-        Matrix4x4 rotation_matrix = PrepareRotationMatrix( t, { 1.0f, 0.0f, 0.0f } ) * PrepareRotationMatrix( t, { 0.0f, -1.0f, 0.0f } );
-        Matrix4x4 translation_matrix = PrepareTranslationMatrix( 0.0f, 0.0f, -4.0f );
-        Matrix4x4 model_view_matrix = translation_matrix * rotation_matrix;
 
-        Matrix4x4 view = Camera.GetMatrix();
+        UpdateUniformBuffer = true;
+      
+        for(int i = 0; i < 64; i++)
+        {
+          
+          Matrix4x4 rotation_matrix = PrepareRotationMatrix( 0, { 1.0f, 0.0f, 0.0f } ) * PrepareRotationMatrix( 0, { 0.0f, -1.0f, 0.0f } );
+          Matrix4x4 translation_matrix = PrepareTranslationMatrix( i % 8 * 1.5f, 0.0f, i / 8 * 1.5f );
+          Matrix4x4 model_view_matrix = translation_matrix * rotation_matrix;
 
-        model_view_matrix = view * model_view_matrix;
+          Matrix4x4 view = Camera.GetMatrix();
 
-        rotMax += 360 / 32.0f;
+          model_view_matrix = view * model_view_matrix;
 
-        if( !MapUpdateAndUnmapHostVisibleMemory( *LogicalDevice, *StagingBufferMemory, (2*i+0) * sizeof( model_view_matrix[0] ) * model_view_matrix.size(), sizeof( model_view_matrix[0] ) * model_view_matrix.size(), &model_view_matrix[0], true, nullptr ) ) {
-          return false;
-        }
+          if( !MapUpdateAndUnmapHostVisibleMemory( *LogicalDevice, *StagingBufferMemory, (2*i+0) * sizeof( model_view_matrix[0] ) * model_view_matrix.size(), sizeof( model_view_matrix[0] ) * model_view_matrix.size(), &model_view_matrix[0], true, nullptr ) ) {
+            return false;
+          }
 
-        Matrix4x4 perspective_matrix = PreparePerspectiveProjectionMatrix( static_cast<float>(Swapchain.Size.width) / static_cast<float>(Swapchain.Size.height),
-          50.0f, 0.5f, 100.0f );
+          Matrix4x4 perspective_matrix = PreparePerspectiveProjectionMatrix( static_cast<float>(Swapchain.Size.width) / static_cast<float>(Swapchain.Size.height),
+            50.0f, 0.5f, 100.0f );
 
-        if( !MapUpdateAndUnmapHostVisibleMemory( *LogicalDevice, *StagingBufferMemory, (2*i+1) * sizeof( model_view_matrix[0] ) * model_view_matrix.size(),
-          sizeof( perspective_matrix[0] ) * perspective_matrix.size(), &perspective_matrix[0], true, nullptr ) ) {
-          return false;
-        }
+          if( !MapUpdateAndUnmapHostVisibleMemory( *LogicalDevice, *StagingBufferMemory, (2*i+1) * sizeof( model_view_matrix[0] ) * model_view_matrix.size(),
+            sizeof( perspective_matrix[0] ) * perspective_matrix.size(), &perspective_matrix[0], true, nullptr ) ) {
+            return false;
+          }
+        } 
       }
+
+      return true;
     }
-    return true;
-  }
 
     bool Resize()
     {

@@ -1,4 +1,6 @@
 #include<vector>
+
+#include "ChessPartPion.h"
 #include "ChessPartTour.h"
 
 #include "CookbookSampleFramework.h"
@@ -12,54 +14,39 @@ class ChessBoard
     public:
 
         ChessBoard()
-        { 
+        {             
+            cases = new ChessPart*[BOARD_SIZE * BOARD_SIZE];
+
+            for(int i = 0; i < 64; i++) cases[i] = nullptr;
             
-            cases = new ChessPartTour*[BOARD_SIZE * BOARD_SIZE];
-            
-            /*for(int c = 0; c < 2; c++)
-            {
-                // Pions
-                for(int i = 0; i < BOARD_SIZE; i++)
-                {
-
-                    ChessPartPion* tmpPion = new ChessPartPion();
-
-                    cases[i + BOARD_SIZE + c * BOARD_SIZE * 6] = new ChessCase(tmpPion);
-                }
-            }
-
             for(int c = 0; c < 2; c++)
             {
                 // Pions
                 for(int i = 0; i < BOARD_SIZE; i++)
                 {
 
-                    ChessPartTour* tmpTour = new ChessPartTour();
-
-                    cases[i + c * BOARD_SIZE * 7] = new ChessCase(tmpTour);
+                    cases[i + BOARD_SIZE + c * BOARD_SIZE * 6] = new ChessPartPion(meshes);
                 }
-            }*/
-
-            for(int i = 0; i < 64; i++)
-            {
-                
-                cases[i] = new ChessPartTour();
-            }                       
-        }
-
-        std::vector<VulkanCookbook::Mesh>* getModelsMesh()
-        {
-            std::vector<VulkanCookbook::Mesh> data;
-
-            for(int i = 0; i < 64; i++)
-            {
-                data.push_back(cases[i]->m_model);
             }
 
-            return &data;
+            cases[0] = new ChessPartTour(meshes);
+            cases[BOARD_SIZE-1] = new ChessPartTour(meshes);
+
         }
+
+        ChessPart* getCaseBoard(int posX, int posY) 
+        {
+            return cases[posY * 8 + posX];
+        }
+
+        int getPosX(int num) { return num % 8; }
+        int getPosY(int num) { return num / 8; }
 
     private:
 
-        ChessPartTour** cases;
+        ChessPart** cases;
+
+    public:
+    
+        ChessMesh meshes;
 };
