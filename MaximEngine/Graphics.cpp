@@ -45,6 +45,8 @@ std::vector<Mesh> Model;
 
 OrbitingCamera                      Camera;
 
+float rotMax;
+
 public:
 
     
@@ -67,11 +69,13 @@ private:
     bool Initialize(WindowParameters window_parameters)
     {
 
-      Camera = OrbitingCamera( Vector3{ 0.0f, 0.6f, 0.0f }, 6.0f );
+      Camera = OrbitingCamera( Vector3{ 0.0f, 0.6f, 0.0f }, 70.0f );
 
       if( !InitializeVulkan( window_parameters ) ) {
         return false;
       }
+      
+      rotMax = 0.0f;
 
       // Vertex data
       /*if( !Load3DModelFromObjFile( "Data/Models/chess_pion.obj", true, false, false, true, Model ) ) {
@@ -117,7 +121,7 @@ private:
 
         if( !UseStagingBufferToUpdateBufferWithDeviceLocalMemoryBound( PhysicalDevice, *LogicalDevice, sizeof( Model.at(i).Data[0] ) * Model.at(i).Data.size(),
           &Model.at(i).Data[0], vectorVertexBuffer.at(i), 0, 0, VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
-          GraphicsQueue.Handle, FramesResources.front().CommandBuffer.at(i), {} ) ) {
+          GraphicsQueue.Handle, FramesResources.front().CommandBuffer.at(0), {} ) ) {
           return false;
         }
       }
@@ -136,7 +140,7 @@ private:
       // Uniform buffer
       InitVkDestroyer( LogicalDevice, UniformBuffer );
       InitVkDestroyer( LogicalDevice, UniformBufferMemory );
-      if( !CreateUniformBuffer( PhysicalDevice, *LogicalDevice, (64 + 2) * 16 * sizeof( float ), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+      if( !CreateUniformBuffer( PhysicalDevice, *LogicalDevice, 2 * 16 * sizeof( float ), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
         *UniformBuffer, *UniformBufferMemory ) ) {
         return false;
       }
@@ -148,7 +152,7 @@ private:
       // Descriptor set with uniform buffer
       VkDescriptorSetLayoutBinding descriptor_set_layout_binding = {
         0,                                          // uint32_t             binding
-        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,          // VkDescriptorType     descriptorType
+        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,          // VkDescriptorType     descriptorType
         1,                                          // uint32_t             descriptorCount
         VK_SHADER_STAGE_VERTEX_BIT,                 // VkShaderStageFlags   stageFlags
         nullptr                                     // const VkSampler    * pImmutableSamplers
@@ -159,7 +163,7 @@ private:
       }
 
       VkDescriptorPoolSize descriptor_pool_size = {
-        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,          // VkDescriptorType     type
+        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,          // VkDescriptorType     type
         1                                           // uint32_t             descriptorCount
       };
       InitVkDestroyer( LogicalDevice, DescriptorPool );
@@ -175,12 +179,12 @@ private:
         DescriptorSets[0],                          // VkDescriptorSet                      TargetDescriptorSet
         0,                                          // uint32_t                             TargetDescriptorBinding
         0,                                          // uint32_t                             TargetArrayElement
-        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,          // VkDescriptorType                     TargetDescriptorType
+        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,          // VkDescriptorType                     TargetDescriptorType
         {                                           // std::vector<VkDescriptorBufferInfo>  BufferInfos
           {
             *UniformBuffer,                           // VkBuffer                             buffer
-            0,                                        // VkDeviceSize                         offset
-            VK_WHOLE_SIZE                             // VkDeviceSize                         range
+            0*2*16*sizeof(float),                                        // VkDeviceSize                         offset
+            2*16*sizeof(float)                             // VkDeviceSize                         range
           }
         }
       };
@@ -418,17 +422,16 @@ private:
         
 
 
-        for(int i = 0; i < command_buffer.size(); i++)
-        {
+        
+           int i = 0;
           
           if( !BeginCommandBufferRecordingOperation( command_buffer[i], VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, nullptr ) ) {
           return false;
           }
         
-        if( UpdateUniformBuffer ) {
+        if( true) {
 
-          for(int ii = 0; ii < Model.size(); ii++)
-          {
+          
             UpdateUniformBuffer = false;
 
             BufferTransition pre_transfer_transition = {
@@ -442,9 +445,9 @@ private:
 
             std::vector<VkBufferCopy> regions = {
               {
-                ii*(2*16*sizeof(float)),                        // VkDeviceSize     srcOffset
-                ii*(2*16*sizeof(float)),                        // VkDeviceSize     dstOffset
-                2 * 16 * sizeof( float )  // VkDeviceSize     size
+                0,                        // VkDeviceSize     srcOffset
+                0,                        // VkDeviceSize     dstOffset
+                64 * 2 * 16 * sizeof( float )  // VkDeviceSize     size
               }
             };
             CopyDataBetweenBuffers( command_buffer[i], *StagingBuffer, *UniformBuffer, regions );
@@ -457,7 +460,7 @@ private:
               VK_QUEUE_FAMILY_IGNORED       // uint32_t         NewQueueFamily
             };
             SetBufferMemoryBarrier( command_buffer[i], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT, { post_transfer_transition } );
-          }
+          
         }
 
         if( PresentQueue.FamilyIndex != GraphicsQueue.FamilyIndex ) {
@@ -499,17 +502,30 @@ private:
         };
         SetScissorStateDynamically( command_buffer[i], 0, { scissor } );
 
-        
-        BindVertexBuffers( command_buffer[i], 0, { { vectorVertexBuffer.at(i), 0 } } ); //// lier command et Model
+        for(int ii = 0; ii < 64; ii++)
+        {
 
-        BindDescriptorSets( command_buffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, *PipelineLayout, 0, DescriptorSets, {} );
+          BindVertexBuffers( command_buffer[i], 0, { { vectorVertexBuffer.at(ii), 0 } } );
+          
+          std::vector<uint32_t> aa;
 
-        BindPipelineObject( command_buffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, *Pipeline );
+          for(int iii = 0; iii < 1; iii++)
+          {
+          
+            uint32_t aaa = ii * 2 * 16 * sizeof(float);
+            aa.push_back(aaa);
+          }
 
-        for( size_t j = 0; j < Model.at(i).Parts.size(); ++j ) {
+          BindDescriptorSets( command_buffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, *PipelineLayout, 0, DescriptorSets, aa );
 
-          DrawGeometry( command_buffer[i], Model.at(i).Parts[j].VertexCount, 1, Model.at(i).Parts[j].VertexOffset, 0 );
-        }    
+          BindPipelineObject( command_buffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, *Pipeline );
+
+          for( size_t j = 0; j < Model.at(ii).Parts.size(); ++j ) {
+
+            DrawGeometry( command_buffer[i], Model.at(ii).Parts[j].VertexCount, 1, Model.at(ii).Parts[j].VertexOffset, 0 );
+          }    
+
+        }
         
 
         EndRenderPass( command_buffer[i] );
@@ -531,7 +547,7 @@ private:
         if( !EndCommandBufferRecordingOperation( command_buffer[i] ) ) {
           return false;
         }
-      }
+      
         return true;
       };
 
@@ -541,7 +557,7 @@ private:
 
     void OnMouseEvent()
     {
-        UpdateStagingBuffer(false);
+        UpdateStagingBuffer(true);
     }
 
     bool UpdateStagingBuffer( bool force ) {
@@ -559,12 +575,20 @@ private:
         vertical_angle = -90.0f;
       }
 
-      Matrix4x4 rotation_matrix = PrepareRotationMatrix( vertical_angle, { 1.0f, 0.0f, 0.0f } ) * PrepareRotationMatrix( horizontal_angle, { 0.0f, -1.0f, 0.0f } );
-      Matrix4x4 translation_matrix = PrepareTranslationMatrix( 0.0f, 0.0f, -4.0f );
-      Matrix4x4 model_view_matrix = translation_matrix * rotation_matrix;
+      
 
       for(int i = 0; i < 32; i++)
       {
+        float t = rotMax;
+        Matrix4x4 rotation_matrix = PrepareRotationMatrix( t, { 1.0f, 0.0f, 0.0f } ) * PrepareRotationMatrix( t, { 0.0f, -1.0f, 0.0f } );
+        Matrix4x4 translation_matrix = PrepareTranslationMatrix( 0.0f, 0.0f, -4.0f );
+        Matrix4x4 model_view_matrix = translation_matrix * rotation_matrix;
+
+        Matrix4x4 view = Camera.GetMatrix();
+
+        model_view_matrix = model_view_matrix * view;
+
+        rotMax += 360 / 32.0f;
 
         if( !MapUpdateAndUnmapHostVisibleMemory( *LogicalDevice, *StagingBufferMemory, (2*i+0) * sizeof( model_view_matrix[0] ) * model_view_matrix.size(), sizeof( model_view_matrix[0] ) * model_view_matrix.size(), &model_view_matrix[0], true, nullptr ) ) {
           return false;
@@ -602,10 +626,8 @@ private:
             WaitForAllSubmittedCommandsToBeFinished(*LogicalDevice);
         }
 
-        delete m_scene;
     }
 
 private:
 
-    Scene* m_scene;
 };

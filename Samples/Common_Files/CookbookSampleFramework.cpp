@@ -223,7 +223,7 @@ namespace VulkanCookbook {
       VkDestroyer(VkImageView) depth_attachment;
       InitVkDestroyer( LogicalDevice, depth_attachment );
 
-      if( !AllocateCommandBuffers( *LogicalDevice, *CommandPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY, 64, command_buffer ) ) {
+      if( !AllocateCommandBuffers( *LogicalDevice, *CommandPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY, 1, command_buffer ) ) {
         return false;
       }
       if( !CreateSemaphore( *LogicalDevice, *image_acquired_semaphore ) ) {

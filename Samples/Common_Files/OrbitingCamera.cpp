@@ -97,14 +97,14 @@ namespace VulkanCookbook {
   }
 
   OrbitingCamera::OrbitingCamera() :
-    OrbitingCamera( { 0.0f, 0.0f, 0.0f }, 1.0f, 0.0f, 0.0f ) {
+    OrbitingCamera( { 0.0f, 0.0f, 0.0f }, 60.0f, 0.0f, 0.0f ) {
   }
 
   OrbitingCamera::OrbitingCamera( Vector3 const & target,
                                   float           distance,
                                   float           horizontal_angle,
                                   float           vertical_angle ) :
-    Camera( target - distance * Vector3{ 0.0f, 0.0f, -1.0f }, { 1.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f, -1.0f } ),
+    Camera( target - Vector3{ 0.0f, 0.0f, -1.0f * distance }, { 1.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f, -1.0f } ),
     Target( target ),
     Distance( distance ),
     HorizontalAngle( 0.0f ),
