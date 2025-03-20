@@ -78,7 +78,7 @@ namespace VulkanCookbook {
   }
 
   Camera::Camera() :
-    Camera( { 0.0f, 0.0f, -60.0f }, { 1.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f, -1.0f } ) {
+    Camera( { 0.0f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f, -1.0f } ) {
   }
 
   Camera::Camera( Vector3 const & position,

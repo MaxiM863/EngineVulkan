@@ -104,7 +104,7 @@ namespace VulkanCookbook {
                                   float           distance,
                                   float           horizontal_angle,
                                   float           vertical_angle ) :
-    Camera( target - Vector3{ 0.0f, 0.0f, -1.0f * distance }, { 1.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f, -1.0f } ),
+    Camera( target - Vector3{ 0.0f, 0.0f, 1.0f * distance }, { 1.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f, -1.0f } ),
     Target( target ),
     Distance( distance ),
     HorizontalAngle( 0.0f ),

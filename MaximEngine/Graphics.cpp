@@ -69,7 +69,7 @@ private:
     bool Initialize(WindowParameters window_parameters)
     {
 
-      Camera = OrbitingCamera( Vector3{ 0.0f, 0.6f, 0.0f }, 70.0f );
+      Camera = OrbitingCamera( Vector3{ 0.0f, 0.6f, 0.0f }, 35.0f );
 
       if( !InitializeVulkan( window_parameters ) ) {
         return false;
@@ -586,7 +586,7 @@ private:
 
         Matrix4x4 view = Camera.GetMatrix();
 
-        model_view_matrix = model_view_matrix * view;
+        model_view_matrix = view * model_view_matrix;
 
         rotMax += 360 / 32.0f;
 
@@ -595,7 +595,7 @@ private:
         }
 
         Matrix4x4 perspective_matrix = PreparePerspectiveProjectionMatrix( static_cast<float>(Swapchain.Size.width) / static_cast<float>(Swapchain.Size.height),
-          50.0f, 0.5f, 10.0f );
+          50.0f, 0.5f, 100.0f );
 
         if( !MapUpdateAndUnmapHostVisibleMemory( *LogicalDevice, *StagingBufferMemory, (2*i+1) * sizeof( model_view_matrix[0] ) * model_view_matrix.size(),
           sizeof( perspective_matrix[0] ) * perspective_matrix.size(), &perspective_matrix[0], true, nullptr ) ) {
