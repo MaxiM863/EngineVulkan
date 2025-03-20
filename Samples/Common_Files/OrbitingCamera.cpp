@@ -107,8 +107,8 @@ namespace VulkanCookbook {
     Camera( target - Vector3{ 0.0f, 0.0f, 1.0f * distance }, { 1.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f, -1.0f } ),
     Target( target ),
     Distance( distance ),
-    HorizontalAngle( 0.0f ),
-    VerticalAngle( 0.0f ) {
+    HorizontalAngle( horizontal_angle ),
+    VerticalAngle( vertical_angle ) {
     RotateHorizontally( horizontal_angle );
     RotateVertically( vertical_angle );
   }

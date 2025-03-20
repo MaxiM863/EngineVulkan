@@ -2,6 +2,10 @@
 
 #include "ChessPartPion.h"
 #include "ChessPartTour.h"
+#include "ChessPartKing"
+#include "ChessPartQueen.h"
+#include "ChessPartCavalier.h"
+#include "ChessPartFou.h"
 
 #include "CookbookSampleFramework.h"
 
@@ -25,12 +29,30 @@ class ChessBoard
                 for(int i = 0; i < BOARD_SIZE; i++)
                 {
 
-                    cases[i + BOARD_SIZE + c * BOARD_SIZE * 6] = new ChessPartPion(meshes);
+                    cases[i + BOARD_SIZE + c * BOARD_SIZE * 5] = new ChessPartPion(meshes, c);
                 }
             }
 
-            cases[0] = new ChessPartTour(meshes);
-            cases[BOARD_SIZE-1] = new ChessPartTour(meshes);
+            cases[0] = new ChessPartTour(meshes,0);
+            cases[BOARD_SIZE-1] = new ChessPartTour(meshes,0);
+            cases[7*BOARD_SIZE] = new ChessPartTour(meshes,1);
+            cases[BOARD_SIZE*BOARD_SIZE-1] = new ChessPartTour(meshes,1);
+
+            cases[1] = new ChessPartCavalier(meshes,0);
+            cases[BOARD_SIZE-2] = new ChessPartCavalier(meshes,0);
+            cases[7*BOARD_SIZE+1] = new ChessPartCavalier(meshes,1);
+            cases[BOARD_SIZE*BOARD_SIZE-2] = new ChessPartCavalier(meshes,1);
+
+            cases[2] = new ChessPartFou(meshes,0);
+            cases[BOARD_SIZE-3] = new ChessPartFou(meshes,0);
+            cases[7*BOARD_SIZE+2] = new ChessPartFou(meshes,1);
+            cases[BOARD_SIZE*BOARD_SIZE-3] = new ChessPartFou(meshes,1);
+
+            cases[3] = new ChessPartKing(meshes, 0);
+            cases[7*BOARD_SIZE+3] = new ChessPartKing(meshes, 1);
+
+            cases[4] = new ChessPartQueen(meshes, 0);
+            cases[7*BOARD_SIZE+4] = new ChessPartQueen(meshes, 1);
 
         }
 
@@ -47,6 +69,6 @@ class ChessBoard
         ChessPart** cases;
 
     public:
-    
+
         ChessMesh meshes;
 };

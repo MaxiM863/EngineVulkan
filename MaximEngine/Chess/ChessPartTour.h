@@ -5,9 +5,10 @@ class ChessPartTour : public ChessPart
 {
     public:
 
-        ChessPartTour(ChessMesh meshList){
+        ChessPartTour(ChessMesh meshList, int color){
 
             m_model = &meshList.m_Tour;
+            this->colorPart = color;
         }
 
         std::vector<int> deplacementPossible() override {

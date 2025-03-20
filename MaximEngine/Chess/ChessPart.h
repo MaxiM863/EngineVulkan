@@ -12,7 +12,9 @@ class ChessPart
         ChessPart(){};
 
         virtual std::vector<int> deplacementPossible() = 0;
-        virtual int getBufferDraw() = 0;       
+        virtual int getBufferDraw() = 0;
+        
+        int colorPart;
 };
 
 #endif

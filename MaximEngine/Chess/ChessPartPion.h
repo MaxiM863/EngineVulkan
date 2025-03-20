@@ -5,9 +5,10 @@ class ChessPartPion : public ChessPart
 {
     public:
 
-        ChessPartPion(ChessMesh meshList){
+        ChessPartPion(ChessMesh meshList, int color){
 
             m_model = &meshList.m_Pion;
+            this->colorPart = color;
         }
 
         std::vector<int> deplacementPossible() override {

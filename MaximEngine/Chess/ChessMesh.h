@@ -7,14 +7,14 @@ class ChessMesh{
 
     public:
 
-        ChessMesh(){
+        ChessMesh(){           
 
-            Load3DModelFromObjFile( "Data/Models/chess_tour.obj", true, false, false, true, m_Tour );
-            /*Load3DModelFromObjFile( "Data/Models/chess_tour.obj", true, false, false, false, m_Cavalier );
-            Load3DModelFromObjFile( "Data/Models/chess_tour.obj", true, false, false, false, m_Fou );
-            Load3DModelFromObjFile( "Data/Models/chess_tour.obj", true, false, false, false, m_Roi );
-            Load3DModelFromObjFile( "Data/Models/chess_tour.obj", true, false, false, false, m_Reine );*/
-            Load3DModelFromObjFile( "Data/Models/chess_pion.obj", true, false, false, true, m_Pion );
+            Load3DModelFromObjFile( "Data/Models/chess_tour.obj", true, true, true, true, m_Tour, &stride );
+            Load3DModelFromObjFile( "Data/Models/chess_cavalier.obj", true, true, true, true, m_Cavalier );
+            Load3DModelFromObjFile( "Data/Models/chess_fou.obj", true, true, true, true, m_Fou );
+            Load3DModelFromObjFile( "Data/Models/chess_king.obj", true, true, true, true, m_Roi );
+            Load3DModelFromObjFile( "Data/Models/chess_queen.obj", true, true, true, true, m_Reine );
+            Load3DModelFromObjFile( "Data/Models/chess_Pion.obj", true, true, true, true, m_Pion );
         }
 
         VulkanCookbook::Mesh m_Tour;
@@ -23,6 +23,8 @@ class ChessMesh{
         VulkanCookbook::Mesh m_Roi;
         VulkanCookbook::Mesh m_Reine;
         VulkanCookbook::Mesh m_Pion;
+
+        uint32_t stride;
 };
 
 #endif

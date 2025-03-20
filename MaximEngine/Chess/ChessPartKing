@@ -1,0 +1,28 @@
+#include "ChessPart.h"
+#include "ChessMesh.h"
+
+class ChessPartKing : public ChessPart
+{
+    public:
+
+    ChessPartKing(ChessMesh meshList, int color){
+
+            m_model = &meshList.m_Roi;
+            this->colorPart = color;
+        }
+
+        std::vector<int> deplacementPossible() override {
+            
+            return std::vector<int>();
+        }
+
+        int getBufferDraw() override { return bufferDraw; }
+             
+        VulkanCookbook::Mesh* m_model;
+
+        
+
+    private:
+
+        int bufferDraw = 2;
+};

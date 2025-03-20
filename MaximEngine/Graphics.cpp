@@ -42,6 +42,16 @@ VkDestroyer(VkDeviceMemory)         UniformBufferMemory;
 
 std::vector<Mesh> Model;
 
+VkDestroyer(VkImage)                Image;
+VkDestroyer(VkDeviceMemory)         ImageMemory;
+VkDestroyer(VkImageView)            ImageView;
+VkDestroyer(VkSampler)              Sampler;
+
+VkDestroyer(VkImage)                Image2;
+VkDestroyer(VkDeviceMemory)         ImageMemory2;
+VkDestroyer(VkImageView)            ImageView2;
+VkDestroyer(VkSampler)              Sampler2;
+
 ///////////////////////////////////////////////////////////////
 
 ChessBoard                          board;
@@ -74,14 +84,90 @@ private:
     bool Initialize(WindowParameters window_parameters)
     {
 
-      Camera = OrbitingCamera( Vector3{ -6.0f, 0.0f, -6.0f }, 20.0f, 0.0f, -135.0f );
+      Camera = OrbitingCamera( Vector3{ -6.0f, 0.0f, -6.0f }, 15.0f, 0.0f, 180 );
 
       if( !InitializeVulkan( window_parameters ) ) {
         return false;
       }
+
+      // Combined image sampler
+      int width = 1;
+      int height = 1;
+      std::vector<unsigned char> image_data;
+      if( !LoadTextureDataFromFile( "Data/Textures/normal_map.png", 4, image_data, &width, &height ) ) {
+        return false;
+      }
+
+      InitVkDestroyer( LogicalDevice, Sampler );
+      InitVkDestroyer( LogicalDevice, Image );
+      InitVkDestroyer( LogicalDevice, ImageMemory );
+      InitVkDestroyer( LogicalDevice, ImageView );
+      if( !CreateCombinedImageSampler( PhysicalDevice, *LogicalDevice, VK_IMAGE_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM, { (uint32_t)width, (uint32_t)height, 1 },
+        1, 1, VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, false, VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_ASPECT_COLOR_BIT, VK_FILTER_LINEAR,
+        VK_FILTER_LINEAR, VK_SAMPLER_MIPMAP_MODE_NEAREST, VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        VK_SAMPLER_ADDRESS_MODE_REPEAT, 0.0f, false, 1.0f, false, VK_COMPARE_OP_ALWAYS, 0.0f, 1.0f, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK,
+        false, *Sampler, *Image, *ImageMemory, *ImageView ) ) {
+        return false;
+      }
+
+      VkImageSubresourceLayers image_subresource_layer = {
+        VK_IMAGE_ASPECT_COLOR_BIT,    // VkImageAspectFlags     aspectMask
+        0,                            // uint32_t               mipLevel
+        0,                            // uint32_t               baseArrayLayer
+        1                             // uint32_t               layerCount
+      };
+
+      if( !UseStagingBufferToUpdateImageWithDeviceLocalMemoryBound( PhysicalDevice, *LogicalDevice, static_cast<VkDeviceSize>(image_data.size()),
+        &image_data[0], *Image, image_subresource_layer, { 0, 0, 0 }, { (uint32_t)width, (uint32_t)height, 1 }, VK_IMAGE_LAYOUT_UNDEFINED,
+        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, VK_ACCESS_SHADER_READ_BIT, VK_IMAGE_ASPECT_COLOR_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+        VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, GraphicsQueue.Handle, FramesResources.front().CommandBuffer.at(0), {} ) ) {
+        return false;
+      }
+
+      //************** */
+
+      // Combined image sampler
+      int width2 = 1;
+      int height2 = 1;
+      std::vector<unsigned char> image_data2;
+      if( !LoadTextureDataFromFile( "Data/Textures/white.png", 4, image_data2, &width2, &height2 ) ) {
+        return false;
+      }
+
+      InitVkDestroyer( LogicalDevice, Sampler2 );
+      InitVkDestroyer( LogicalDevice, Image2 );
+      InitVkDestroyer( LogicalDevice, ImageMemory2 );
+      InitVkDestroyer( LogicalDevice, ImageView2 );
+      if( !CreateCombinedImageSampler( PhysicalDevice, *LogicalDevice, VK_IMAGE_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM, { (uint32_t)width2, (uint32_t)height2, 1 },
+        1, 1, VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, false, VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_ASPECT_COLOR_BIT, VK_FILTER_LINEAR,
+        VK_FILTER_LINEAR, VK_SAMPLER_MIPMAP_MODE_NEAREST, VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        VK_SAMPLER_ADDRESS_MODE_REPEAT, 0.0f, false, 1.0f, false, VK_COMPARE_OP_ALWAYS, 0.0f, 1.0f, VK_BORDER_COLOR_INT_OPAQUE_WHITE,
+        false, *Sampler2, *Image2, *ImageMemory2, *ImageView2 ) ) {
+        return false;
+      }
+
+      VkImageSubresourceLayers image_subresource_layer2 = {
+        VK_IMAGE_ASPECT_COLOR_BIT,    // VkImageAspectFlags     aspectMask
+        0,                            // uint32_t               mipLevel
+        0,                            // uint32_t               baseArrayLayer
+        1                             // uint32_t               layerCount
+      };
+
+      if( !UseStagingBufferToUpdateImageWithDeviceLocalMemoryBound( PhysicalDevice, *LogicalDevice, static_cast<VkDeviceSize>(image_data2.size()),
+        &image_data2[0], *Image2, image_subresource_layer2, { 0, 0, 0 }, { (uint32_t)width2, (uint32_t)height2, 1 }, VK_IMAGE_LAYOUT_UNDEFINED,
+        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, VK_ACCESS_SHADER_READ_BIT, VK_IMAGE_ASPECT_COLOR_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+        VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, GraphicsQueue.Handle, FramesResources.front().CommandBuffer.at(0), {} ) ) {
+        return false;
+      }
+
+
       
       Model.push_back(board.meshes.m_Pion);
       Model.push_back(board.meshes.m_Tour);
+      Model.push_back(board.meshes.m_Roi);
+      Model.push_back(board.meshes.m_Cavalier);
+      Model.push_back(board.meshes.m_Fou);
+      Model.push_back(board.meshes.m_Reine);
 
       for(int i = 0; i < Model.size(); i++)
       {
@@ -135,28 +221,46 @@ private:
       }
 
       // Descriptor set with uniform buffer
-      VkDescriptorSetLayoutBinding descriptor_set_layout_binding = {
-        0,                                          // uint32_t             binding
-        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,          // VkDescriptorType     descriptorType
-        1,                                          // uint32_t             descriptorCount
-        VK_SHADER_STAGE_VERTEX_BIT,                 // VkShaderStageFlags   stageFlags
-        nullptr                                     // const VkSampler    * pImmutableSamplers
+      std::vector<VkDescriptorSetLayoutBinding> descriptor_set_layout_binding = {
+        {
+          0,                                          
+          VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,        
+          2,                                          
+          VK_SHADER_STAGE_VERTEX_BIT,                 
+          nullptr
+        }
+        ,
+        {
+          1,                                          // uint32_t             binding
+          VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,  // VkDescriptorType     descriptorType
+          2,                                          // uint32_t             descriptorCount
+          VK_SHADER_STAGE_FRAGMENT_BIT,               // VkShaderStageFlags   stageFlags
+          nullptr                                     // const VkSampler    * pImmutableSamplers
+        }
       };
+
       InitVkDestroyer( LogicalDevice, DescriptorSetLayout );
       if( !CreateDescriptorSetLayout( *LogicalDevice, { descriptor_set_layout_binding }, *DescriptorSetLayout ) ) {
         return false;
       }
 
-      VkDescriptorPoolSize descriptor_pool_size = {
-        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,          // VkDescriptorType     type
-        1                                           // uint32_t             descriptorCount
+      std::vector<VkDescriptorPoolSize> descriptor_pool_sizes = {
+        {
+          VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,          // VkDescriptorType     type
+          2                                           // uint32_t             descriptorCount
+        },
+        {
+          VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,  // VkDescriptorType     type
+          2                                           // uint32_t             descriptorCount
+        }
       };
+
       InitVkDestroyer( LogicalDevice, DescriptorPool );
-      if( !CreateDescriptorPool( *LogicalDevice, false, 1, { descriptor_pool_size }, *DescriptorPool ) ) {
+      if( !CreateDescriptorPool( *LogicalDevice, true, 4, descriptor_pool_sizes, *DescriptorPool ) ) {
         return false;
       }
 
-      if( !AllocateDescriptorSets( *LogicalDevice, *DescriptorPool, { *DescriptorSetLayout }, DescriptorSets ) ) {
+      if( !AllocateDescriptorSets( *LogicalDevice, *DescriptorPool, { *DescriptorSetLayout, *DescriptorSetLayout }, DescriptorSets ) ) {
         return false;
       }
 
@@ -174,7 +278,49 @@ private:
         }
       };
 
-      UpdateDescriptorSets( *LogicalDevice, {}, { buffer_descriptor_update }, {}, {} );
+      ImageDescriptorInfo image_descriptor_update = {
+        DescriptorSets[0],                          // VkDescriptorSet                      TargetDescriptorSet
+        1,                                          // uint32_t                             TargetDescriptorBinding
+        0,                                          // uint32_t                             TargetArrayElement
+        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,  // VkDescriptorType                     TargetDescriptorType
+        {                                           // std::vector<VkDescriptorImageInfo>   ImageInfos
+          {
+            *Sampler,                                 // VkSampler                            sampler
+            *ImageView,                               // VkImageView                          imageView
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL  // VkImageLayout                        imageLayout
+          }
+        }
+      };
+
+      BufferDescriptorInfo buffer_descriptor_update2 = {
+        DescriptorSets[1],                          // VkDescriptorSet                      TargetDescriptorSet
+        0,                                          // uint32_t                             TargetDescriptorBinding
+        0,                                          // uint32_t                             TargetArrayElement
+        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,          // VkDescriptorType                     TargetDescriptorType
+        {                                           // std::vector<VkDescriptorBufferInfo>  BufferInfos
+          {
+            *UniformBuffer,                           // VkBuffer                             buffer
+            0*2*16*sizeof(float),                                        // VkDeviceSize                         offset
+            2*16*sizeof(float)                             // VkDeviceSize                         range
+          }
+        }
+      };
+
+      ImageDescriptorInfo image_descriptor_update2 = {
+        DescriptorSets[1],                          // VkDescriptorSet                      TargetDescriptorSet
+        1,                                          // uint32_t                             TargetDescriptorBinding
+        0,                                          // uint32_t                             TargetArrayElement
+        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,  // VkDescriptorType                     TargetDescriptorType
+        {                                           // std::vector<VkDescriptorImageInfo>   ImageInfos
+          {
+            *Sampler,                                 // VkSampler                            sampler
+            *ImageView2,                               // VkImageView                          imageView
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL  // VkImageLayout                        imageLayout
+          }
+        }
+      };
+
+      UpdateDescriptorSets( *LogicalDevice, { image_descriptor_update, image_descriptor_update2 }, { buffer_descriptor_update, buffer_descriptor_update2 }, {}, {} );
 
       // Render pass
       std::vector<VkAttachmentDescription> attachment_descriptions = {
@@ -251,6 +397,14 @@ private:
 
       // Graphics pipeline
 
+      std::vector<VkPushConstantRange> push_constant_ranges = {
+        {
+          VK_SHADER_STAGE_FRAGMENT_BIT,   // VkShaderStageFlags     stageFlags
+          0,                              // uint32_t               offset
+          sizeof( float ) * 4             // uint32_t               size
+        }
+      };
+
       InitVkDestroyer( LogicalDevice, PipelineLayout );
       if( !CreatePipelineLayout( *LogicalDevice, { *DescriptorSetLayout }, {}, *PipelineLayout ) ) {
         return false;
@@ -298,23 +452,41 @@ private:
       std::vector<VkVertexInputBindingDescription> vertex_input_binding_descriptions = {
         {
           0,                            // uint32_t                     binding
-          6 * sizeof( float ),          // uint32_t                     stride
+          board.meshes.stride,                // uint32_t                     stride
           VK_VERTEX_INPUT_RATE_VERTEX   // VkVertexInputRate            inputRate
         }
       };
-
+  
       std::vector<VkVertexInputAttributeDescription> vertex_attribute_descriptions = {
-        {
+        { // Position
           0,                                                                        // uint32_t   location
           0,                                                                        // uint32_t   binding
           VK_FORMAT_R32G32B32_SFLOAT,                                               // VkFormat   format
           0                                                                         // uint32_t   offset
         },
-        {
+        { // Normal vector
           1,                                                                        // uint32_t   location
           0,                                                                        // uint32_t   binding
           VK_FORMAT_R32G32B32_SFLOAT,                                               // VkFormat   format
           3 * sizeof( float )                                                       // uint32_t   offset
+        },
+        { // Texcoords
+          2,                                                                        // uint32_t   location
+          0,                                                                        // uint32_t   binding
+          VK_FORMAT_R32G32_SFLOAT,                                                  // VkFormat   format
+          6 * sizeof( float )                                                       // uint32_t   offset
+        },
+        { // Tangent vector
+          3,                                                                        // uint32_t   location
+          0,                                                                        // uint32_t   binding
+          VK_FORMAT_R32G32B32_SFLOAT,                                               // VkFormat   format
+          8 * sizeof( float )                                                       // uint32_t   offset
+        },
+        { // bitangent vector
+          4,                                                                        // uint32_t   location
+          0,                                                                        // uint32_t   binding
+          VK_FORMAT_R32G32B32_SFLOAT,                                               // VkFormat   format
+          11 * sizeof( float )                                                      // uint32_t   offset
         }
       };
 
@@ -503,9 +675,21 @@ private:
               
               uint32_t aaa = (8 * m + z) * 2 * 16 * sizeof(float);
               
-              BindDescriptorSets( command_buffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, *PipelineLayout, 0, DescriptorSets, { aaa } );
+              
 
+              if(part->colorPart == 0)
+              {BindDescriptorSets( command_buffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, *PipelineLayout, 0, {DescriptorSets[0]}, { aaa, 0 } );
+                std::array<float, 4> light_position = { 0.0f, 10.0f, 0.0f, 0.0f };
+              ProvideDataToShadersThroughPushConstants( command_buffer[0], *PipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof( float ) * 4, &light_position[0] );
+              } 
+              else
+              { BindDescriptorSets( command_buffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, *PipelineLayout, 0, {DescriptorSets[1]}, { aaa, 0 } );
+              std::array<float, 4> light_position = { 5.0f, 5.0f, -1.0f, 0.0f };
+              ProvideDataToShadersThroughPushConstants( command_buffer[0], *PipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof( float ) * 4, &light_position[0] );
+            }
               BindPipelineObject( command_buffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, *Pipeline );
+
+             
 
               for( size_t j = 0; j < Model.at(part->getBufferDraw()).Parts.size(); ++j ) {
 
@@ -558,8 +742,7 @@ private:
       
         for(int i = 0; i < 64; i++)
         {
-          
-          Matrix4x4 rotation_matrix = PrepareRotationMatrix( 0, { 1.0f, 0.0f, 0.0f } ) * PrepareRotationMatrix( 0, { 0.0f, -1.0f, 0.0f } );
+          Matrix4x4 rotation_matrix =  PrepareRotationMatrix( 0, { 1.0f, 0.0f, 0.0f } ) * PrepareRotationMatrix( 0, { 0.0f, -1.0f, 0.0f } );
           Matrix4x4 translation_matrix = PrepareTranslationMatrix( i % 8 * 1.5f, 0.0f, i / 8 * 1.5f );
           Matrix4x4 model_view_matrix = translation_matrix * rotation_matrix;
 
@@ -572,7 +755,7 @@ private:
           }
 
           Matrix4x4 perspective_matrix = PreparePerspectiveProjectionMatrix( static_cast<float>(Swapchain.Size.width) / static_cast<float>(Swapchain.Size.height),
-            50.0f, 0.5f, 100.0f );
+            50.0f, 0.1f, 100.0f );
 
           if( !MapUpdateAndUnmapHostVisibleMemory( *LogicalDevice, *StagingBufferMemory, (2*i+1) * sizeof( model_view_matrix[0] ) * model_view_matrix.size(),
             sizeof( perspective_matrix[0] ) * perspective_matrix.size(), &perspective_matrix[0], true, nullptr ) ) {
