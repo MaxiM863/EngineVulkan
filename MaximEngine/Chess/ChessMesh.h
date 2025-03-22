@@ -15,7 +15,7 @@ class ChessMesh{
             Load3DModelFromObjFile( "Data/Models/chess_king.obj", true, true, true, true, m_Roi );
             Load3DModelFromObjFile( "Data/Models/chess_queen.obj", true, true, true, true, m_Reine );
             Load3DModelFromObjFile( "Data/Models/chess_Pion.obj", true, true, true, true, m_Pion );
-            Load3DModelFromObjFile( "Data/Models/case.obj", true, true, true, true, m_Case );
+            Load3DModelFromObjFile( "Data/Models/case.obj", true, true, true, false, m_Case );
         }
 
         VulkanCookbook::Mesh m_Tour;

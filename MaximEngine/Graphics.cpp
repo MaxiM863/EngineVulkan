@@ -84,7 +84,7 @@ private:
     bool Initialize(WindowParameters window_parameters)
     {
 
-      Camera = OrbitingCamera( Vector3{ 0.0f, 0.0f, 0.0f }, 10.0f, 0.0f, 180.0f );
+      Camera = OrbitingCamera( Vector3{ 0.0f, 0.0f, 0.0f }, 8.0f, 0.0f, 180.0f );
 
       if( !InitializeVulkan( window_parameters ) ) {
         return false;
@@ -729,8 +729,7 @@ private:
 
               DrawGeometry( command_buffer[i], Model.at(6).Parts[0].VertexCount, 1, Model.at(6).Parts[0].VertexOffset, 0 );
             }
-          }  
-
+          }
         }
         
 
@@ -776,7 +775,7 @@ private:
         
         float x = (2.0f * MouseState.Position.X) / Swapchain.Size.width - 1.0f;
         float y = 1.0f - (2.0f * MouseState.Position.Y) / Swapchain.Size.height;
-        float z = -10.0f;
+        float z = -8.0f;
         
         Matrix4x4 matW = Camera.GetMatrix();
         
@@ -808,7 +807,7 @@ private:
             // Normalize the direction vector
             glm::vec3 worldDir = glm::normalize(glm::vec3(worldSpaceRay));
             
-            Matrix4x4 ttt = PrepareTranslationMatrix( i % 8 * 1.5f-6.0f, 0.0f, i / 8 * 1.5f-6.0f );
+            Matrix4x4 ttt = PrepareTranslationMatrix( i % 8 * 1.5f-5.5f, 0.0f, i / 8 * 1.5f-5.5f );
 
             std::optional<Vector3> rep = ray_intersects_triangle(Camera.GetPosition(), Vector3{worldDir[0], worldDir[1], worldDir[2]}, data, Model.at(board.getCaseBoard(board.getPosX(i), board.getPosY(i))->getBufferDraw()).Data.size(), glm::make_mat4(ttt.data()));
             
@@ -841,8 +840,8 @@ private:
         {
           Matrix4x4 rotation_matrix =  PrepareRotationMatrix( 0, { 1.0f, 0.0f, 0.0f } ) * PrepareRotationMatrix( 0, { 0.0f, -1.0f, 0.0f } );
           Matrix4x4 translation_matrix;
-          if(meshPos == i) translation_matrix = PrepareTranslationMatrix( i % 8 * 1.5f-6.0f, selectedTranslation, i / 8 * 1.5f-6.0f );
-          else translation_matrix = PrepareTranslationMatrix( i % 8 * 1.5f-6.0f, 0.0f, i / 8 * 1.5f-6.0f );
+          if(meshPos == i) translation_matrix = PrepareTranslationMatrix( i % 8 * 1.5f-5.5f, selectedTranslation, i / 8 * 1.5f-5.5f );
+          else translation_matrix = PrepareTranslationMatrix( i % 8 * 1.5f-5.5f, 0.0f, i / 8 * 1.5f-5.5f );
           Matrix4x4 model_view_matrix = translation_matrix * rotation_matrix;
 
           Matrix4x4 view = Camera.GetMatrix();

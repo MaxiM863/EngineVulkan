@@ -73,7 +73,7 @@ int main(void) {
 
 	Graphics engine;
 
-	WindowFramework window("Maxim Engine 1_0", 100, 100, 500, 500, engine);
+	WindowFramework window("Maxim Engine 1_0", 100, 100, 1000, 1000, engine);
 
 	window.Render();
 
