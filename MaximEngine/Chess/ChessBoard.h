@@ -6,6 +6,7 @@
 #include "ChessPartQueen.h"
 #include "ChessPartCavalier.h"
 #include "ChessPartFou.h"
+#include "ChessPartCase.h"
 
 #include "CookbookSampleFramework.h"
 
@@ -19,7 +20,7 @@ class ChessBoard
 
         ChessBoard()
         {             
-            cases = new ChessPart*[BOARD_SIZE * BOARD_SIZE];
+            cases = new ChessPart*[2 * BOARD_SIZE * BOARD_SIZE];
 
             for(int i = 0; i < 64; i++) cases[i] = nullptr;
             
@@ -54,6 +55,11 @@ class ChessBoard
             cases[4] = new ChessPartQueen(meshes, 0);
             cases[7*BOARD_SIZE+4] = new ChessPartQueen(meshes, 1);
 
+            squares = new ChessPart*[2];
+
+            squares[0] = new ChessPartCase(meshes, 0);
+            squares[1] = new ChessPartCase(meshes, 1);
+
         }
 
         ChessPart* getCaseBoard(int posX, int posY) 
@@ -67,6 +73,7 @@ class ChessBoard
     private:
 
         ChessPart** cases;
+        ChessPart** squares;
 
     public:
 

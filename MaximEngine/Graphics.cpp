@@ -168,6 +168,7 @@ private:
       Model.push_back(board.meshes.m_Cavalier);
       Model.push_back(board.meshes.m_Fou);
       Model.push_back(board.meshes.m_Reine);
+      Model.push_back(board.meshes.m_Case);
 
       for(int i = 0; i < Model.size(); i++)
       {
@@ -694,8 +695,40 @@ private:
               for( size_t j = 0; j < Model.at(part->getBufferDraw()).Parts.size(); ++j ) {
 
                 DrawGeometry( command_buffer[i], Model.at(part->getBufferDraw()).Parts[j].VertexCount, 1, Model.at(part->getBufferDraw()).Parts[j].VertexOffset, 0 );
+                
               }
-            }  
+            }
+            
+            if((z+m)%2 == 0)
+            {
+              BindVertexBuffers( command_buffer[i], 0, { { vectorVertexBuffer.at(6), 0 } } );
+              
+              uint32_t aaa = (8 * m + z) * 2 * 16 * sizeof(float);             
+
+              BindDescriptorSets( command_buffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, *PipelineLayout, 0, {DescriptorSets[0]}, { aaa, 0 } );
+              
+              std::array<float, 4> light_position = { 0.0f, 10.0f, 0.0f, 0.0f };
+              ProvideDataToShadersThroughPushConstants( command_buffer[0], *PipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof( float ) * 4, &light_position[0] );
+              
+              BindPipelineObject( command_buffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, *Pipeline );
+
+              DrawGeometry( command_buffer[i], Model.at(6).Parts[0].VertexCount, 1, Model.at(6).Parts[0].VertexOffset, 0 );
+            } 
+            else
+            { 
+              BindVertexBuffers( command_buffer[i], 0, { { vectorVertexBuffer.at(6), 0 } } );
+              
+              uint32_t aaa = (8 * m + z) * 2 * 16 * sizeof(float);             
+
+              BindDescriptorSets( command_buffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, *PipelineLayout, 0, {DescriptorSets[1]}, { aaa, 0 } );
+              
+              std::array<float, 4> light_position = { 0.0f, 10.0f, 0.0f, 0.0f };
+              ProvideDataToShadersThroughPushConstants( command_buffer[0], *PipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof( float ) * 4, &light_position[0] );
+              
+              BindPipelineObject( command_buffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, *Pipeline );
+
+              DrawGeometry( command_buffer[i], Model.at(6).Parts[0].VertexCount, 1, Model.at(6).Parts[0].VertexOffset, 0 );
+            }
           }  
 
         }
@@ -785,7 +818,7 @@ private:
               touched = i;
               break;
             }
-          }            
+          }
         }
 
         if(touched != -1)
