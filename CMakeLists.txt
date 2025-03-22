@@ -18,10 +18,20 @@ target_sources(EngineMaxim PRIVATE
 
 target_include_directories(EngineMaxim PRIVATE "./Chess")
 
+include(FetchContent)
+
+FetchContent_Declare(
+	glm
+	GIT_REPOSITORY	https://github.com/g-truc/glm.git
+	GIT_TAG 	bf71a834948186f4097caa076cd2663c69a10e1e #refs/tags/1.0.1
+)
+
+FetchContent_MakeAvailable(glm)
+
 if(WIN32)
     
     add_definitions(-DVK_USE_PLATFORM_WIN32_KHR)
-    target_link_libraries(EngineMaxim PRIVATE Cookbook)
+    target_link_libraries(EngineMaxim PRIVATE Cookbook glm::glm)
 
 endif(WIN32)
 
@@ -39,7 +49,7 @@ if(UNIX)
 
     link_directories(${X11_LIBRARIES})
 
-    target_link_libraries(EngineMaxim ${X11_LIBRARIES} Cookbook)
+    target_link_libraries(EngineMaxim ${X11_LIBRARIES} Cookbook glm::glm)
 
 endif(UNIX)
 

@@ -84,7 +84,7 @@ private:
     bool Initialize(WindowParameters window_parameters)
     {
 
-      Camera = OrbitingCamera( Vector3{ -6.0f, 0.0f, -6.0f }, 15.0f, 0.0f, 180 );
+      Camera = OrbitingCamera( Vector3{ 0.0f, 0.0f, 0.0f }, 10.0f, 0.0f, 180.0f );
 
       if( !InitializeVulkan( window_parameters ) ) {
         return false;
@@ -735,15 +735,81 @@ private:
 
     bool UpdateStagingBuffer( bool force ) {
     
+      int meshPos = -1;
+
+      if(MouseState.Buttons[0].WasClicked)
+      {
+        int touched = -1;
+        
+        float x = (2.0f * MouseState.Position.X) / Swapchain.Size.width - 1.0f;
+        float y = 1.0f - (2.0f * MouseState.Position.Y) / Swapchain.Size.height;
+        float z = -10.0f;
+        
+        Matrix4x4 matW = Camera.GetMatrix();
+        
+        Matrix4x4 perspective_matrix = PreparePerspectiveProjectionMatrix( static_cast<float>(Swapchain.Size.width) / static_cast<float>(Swapchain.Size.height), 90.0f, 0.1f, 100.0f );
+
+        for(int i = 0; i < 64; i++)
+        {
+          if(board.getCaseBoard(board.getPosX(i), board.getPosY(i)) != nullptr)
+          {
+            float* data = Model.at(board.getCaseBoard(board.getPosX(i), board.getPosY(i))->getBufferDraw()).Data.data();
+            
+            // Convert screen coordinates to normalized device coordinates (NDC)
+            float ndcX = x;//(2.0f * screenX) / screenWidth - 1.0f;
+            float ndcY = y;//1.0f - (2.0f * screenY) / screenHeight; //Invert Y
+
+            // Convert NDC to clip space
+            glm::vec4 clipSpaceRay = glm::vec4(ndcX, -ndcY, -1.0, 1.0);
+
+            // Convert clip space to eye space
+            glm::mat4 inverseProjectionMatrix = glm::inverse(glm::make_mat4(perspective_matrix.data()));
+            glm::vec4 eyeSpaceRay = inverseProjectionMatrix * clipSpaceRay;
+            eyeSpaceRay.z = -1.0f;
+            eyeSpaceRay.w = 0.0f;
+
+            // Convert eye space to world space
+            glm::mat4 inverseViewMatrix = glm::inverse(glm::make_mat4(matW.data()));
+            glm::vec4 worldSpaceRay = inverseViewMatrix * eyeSpaceRay;
+
+            // Normalize the direction vector
+            glm::vec3 worldDir = glm::normalize(glm::vec3(worldSpaceRay));
+            
+            Matrix4x4 ttt = PrepareTranslationMatrix( i % 8 * 1.5f-6.0f, 0.0f, i / 8 * 1.5f-6.0f );
+
+            std::optional<Vector3> rep = ray_intersects_triangle(Camera.GetPosition(), Vector3{worldDir[0], worldDir[1], worldDir[2]}, data, Model.at(board.getCaseBoard(board.getPosX(i), board.getPosY(i))->getBufferDraw()).Data.size(), glm::make_mat4(ttt.data()));
+            
+            if(rep != std::nullopt)
+            {
+              
+              touched = i;
+              break;
+            }
+          }            
+        }
+
+        if(touched != -1)
+        {
+          meshPos = touched;
+          force = true;
+        }
+      }
+
       if(force)
       {
 
         UpdateUniformBuffer = true;
+
+        float selectedTranslation = 0.0f;
+
+        if(meshPos != -1) selectedTranslation = 1.0f;
       
         for(int i = 0; i < 64; i++)
         {
           Matrix4x4 rotation_matrix =  PrepareRotationMatrix( 0, { 1.0f, 0.0f, 0.0f } ) * PrepareRotationMatrix( 0, { 0.0f, -1.0f, 0.0f } );
-          Matrix4x4 translation_matrix = PrepareTranslationMatrix( i % 8 * 1.5f, 0.0f, i / 8 * 1.5f );
+          Matrix4x4 translation_matrix;
+          if(meshPos == i) translation_matrix = PrepareTranslationMatrix( i % 8 * 1.5f-6.0f, selectedTranslation, i / 8 * 1.5f-6.0f );
+          else translation_matrix = PrepareTranslationMatrix( i % 8 * 1.5f-6.0f, 0.0f, i / 8 * 1.5f-6.0f );
           Matrix4x4 model_view_matrix = translation_matrix * rotation_matrix;
 
           Matrix4x4 view = Camera.GetMatrix();
@@ -755,7 +821,7 @@ private:
           }
 
           Matrix4x4 perspective_matrix = PreparePerspectiveProjectionMatrix( static_cast<float>(Swapchain.Size.width) / static_cast<float>(Swapchain.Size.height),
-            50.0f, 0.1f, 100.0f );
+            90.0f, 0.1f, 100.0f );
 
           if( !MapUpdateAndUnmapHostVisibleMemory( *LogicalDevice, *StagingBufferMemory, (2*i+1) * sizeof( model_view_matrix[0] ) * model_view_matrix.size(),
             sizeof( perspective_matrix[0] ) * perspective_matrix.size(), &perspective_matrix[0], true, nullptr ) ) {
