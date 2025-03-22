@@ -67,6 +67,13 @@ class ChessBoard
             return cases[posY * 8 + posX];
         }
 
+        void movePart(int from, int to)
+        {
+            
+            cases[to] = cases[from];
+            cases[from] = nullptr;
+        }
+
         int getPosX(int num) { return num % 8; }
         int getPosY(int num) { return num / 8; }
 
