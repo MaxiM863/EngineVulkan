@@ -31,7 +31,7 @@ FetchContent_MakeAvailable(glm)
 if(WIN32)
     
     add_definitions(-DVK_USE_PLATFORM_WIN32_KHR)
-    target_link_libraries(EngineMaxim PRIVATE Cookbook glm::glm)
+    target_link_libraries(EngineMaxim PRIVATE Cookbook)
 
 endif(WIN32)
 
@@ -49,8 +49,8 @@ if(UNIX)
 
     link_directories(${X11_LIBRARIES})
 
-    target_link_libraries(EngineMaxim ${X11_LIBRARIES} Cookbook glm::glm)
+    target_link_libraries(EngineMaxim ${X11_LIBRARIES} Cookbook)
 
 endif(UNIX)
 
-target_include_directories(EngineMaxim PRIVATE "./Cookbook" "./Samples/Common_Files" "./Library/Common_Files" "./Library/Source_Files" "./External" "./MaximEngine")
+target_include_directories(EngineMaxim PRIVATE "./Cookbook" "./Samples/Common_Files" "./Library/Common_Files" "./Library/Source_Files" "./External" "./MaximEngine" "./build/_deps/glm-src/")

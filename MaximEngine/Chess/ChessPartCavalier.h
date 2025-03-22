@@ -11,9 +11,23 @@ class ChessPartCavalier : public ChessPart
             this->colorPart = color;
         }
 
-        std::vector<int> deplacementPossible() override {
+        std::vector<int> deplacementPossible(int position, ChessBoard board) override {
             
-            return std::vector<int>();
+            std::vector<int> rep;
+
+            if(position - (2 * 8 - 1) >= 0) rep.push_back(position-(2*8-1));
+            if(position - (2 * 8 + 1) >= 0) rep.push_back(position-(2*8+1));
+
+            if(position + (2 * 8 - 1) < 64) rep.push_back(position+(2*8-1));
+            if(position + (2 * 8 + 1) < 64) rep.push_back(position+(2*8+1));
+
+            if(position + (8 + 2) < 64) rep.push_back(position+(8+2));
+            if(position + (8 - 2) < 64) rep.push_back(position+(8-2));
+
+            if(position - (8 + 2) >= 0) rep.push_back(position-(8+2));
+            if(position - (8 - 2) >= 0) rep.push_back(position-(8-2));
+
+            return rep;
         }
 
         int getBufferDraw() override { return bufferDraw; }
