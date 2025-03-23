@@ -24,40 +24,39 @@ class ChessPartPion : public ChessPart
                 rep.push_back(position + switchColor * 8);
             }
 
-            if(switchColor == 1)
+            if(position/8 == 6 || position/8 == 1)
             {
-
-                if(position%8 == 7)
+                if(position + switchColor * 16 < 64 && position + switchColor * 16 >= 0 && board.getCaseBoard(board.getPosX(position + switchColor * 16), board.getPosY(position + switchColor * 16)) == nullptr)
                 {
-                    if(board.getCaseBoard(board.getPosX(position) + 1 * switchColor, board.getPosY(position)) != nullptr)
-                    {
-                        //rep.push_back(position + switchColor * ());
-                    }
+                    rep.push_back(position + switchColor * 16);
                 }
-                else if(position%8 == 0)
-                {
-
-                }
-                else
-                {
-
-                }                
             }
-            else{
 
-                if(position%8 == 7)
+            if(position%8 == 7)
+            {
+                if(board.getCaseBoard(board.getPosX(position) - 1 * switchColor, board.getPosY(position)) != nullptr)
                 {
-
+                    rep.push_back(position - switchColor * (1));
                 }
-                else if(position%8 == 0)
-                {
-
-                }
-                else
-                {
-
-                }   
             }
+            else if(position%8 == 0)
+            {
+                if(board.getCaseBoard(board.getPosX(position) + 1 * switchColor, board.getPosY(position)) != nullptr)
+                {
+                    rep.push_back(position + switchColor * (1));
+                }
+            }
+            else
+            {
+                if(board.getCaseBoard(board.getPosX(position) + 1 * switchColor, board.getPosY(position)) != nullptr)
+                {
+                    rep.push_back(position + switchColor * (1));
+                }
+                if(board.getCaseBoard(board.getPosX(position) - 1 * switchColor, board.getPosY(position)) != nullptr)
+                {
+                    rep.push_back(position - switchColor * (1));
+                }
+            }           
 
             return rep;
         }
