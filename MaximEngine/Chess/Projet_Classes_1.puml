@@ -1,0 +1,116 @@
+@startuml
+
+title <size:24><color:#darkblue><u><:1f98b:> Diagramme de Classe Projet Échec <:1f98b:></u></color></size>
+
+class PlateauJeu {
+
+
+}
+
+abstract CaseJeu {
+
+    + Contenu() 
+}
+
+class CaseVide {
+
+    
+}
+
+Abstract PiecesJeu {
+
+    + DeplacementsPossibles()
+}
+
+Class Pion {
+
+    + DeplacementsPossibles()
+}
+
+Class Tour {
+
+    + DeplacementsPossibles()
+}
+
+Class Cavalier {
+
+    + DeplacementsPossibles()
+}
+
+Class Fou {
+
+    + DeplacementsPossibles()
+}
+
+Class Roi {
+
+    + DeplacementsPossibles()
+}
+
+class Reine {
+
+    + DeplacementsPossibles()
+}
+
+class JeuEchec {
+
+
+}
+
+class Timer {
+
+
+}
+
+class Joueur {
+
+
+}
+
+class FormulaireJavaSwing {
+
+
+}
+
+class PanelGraphiquePlateau {
+
+
+}
+
+class ServerTCP {
+
+
+}
+
+class Controleur {
+
+
+}
+
+FormulaireJavaSwing -- Controleur
+
+Controleur -- ServerTCP
+
+FormulaireJavaSwing "1" *-- "1" PanelGraphiquePlateau
+
+FormulaireJavaSwing "1" o-- "0..4"JeuEchec
+
+JeuEchec "1" *-- "1" PlateauJeu
+
+JeuEchec "1" *-- "2" Joueur
+
+PlateauJeu "1" *-- "64" CaseJeu
+
+JeuEchec --> Timer
+
+CaseJeu <|-- CaseVide
+CaseJeu <|-- PiecesJeu
+
+PiecesJeu <|-- Reine
+PiecesJeu <|-- Roi
+PiecesJeu <|-- Tour
+PiecesJeu <|-- Cavalier
+PiecesJeu <|-- Fou
+PiecesJeu <|-- Pion
+
+@enduml

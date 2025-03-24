@@ -1,39 +1,37 @@
-cmake_minimum_required (VERSION 3.5)
+cmake_minimum_required(VERSION 3.31)
 
 project(EngineMaxim)
 
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-add_executable(EngineMaxim 
-"./MaximEngine/main.cpp"
-"./Samples/Common_Files/OS.cpp"
-"./Samples/Common_Files/OS.h"
-"./Samples/Common_Files/Camera.cpp"
-"./Samples/Common_Files/Camera.h"
-"./Samples/Common_Files/CookbookSampleFramework.cpp"
-"./Samples/Common_Files/CookbookSampleFramework.h"
-"./Samples/Common_Files/OrbitingCamera.cpp"
-"./Samples/Common_Files/OrbitingCamera.h"
-"./MaximEngine/Graphics.cpp"
-"./MaximEngine/Graphics.h"
-"./MaximEngine/ModelClass.cpp"
-"./MaximEngine/ModelClass.h"
-"./MaximEngine/Scene.cpp"
-"./MaximEngine/Scene.h"
+add_subdirectory(Cookbook)
+add_subdirectory(MaximEngine)
+
+add_executable(EngineMaxim main.cpp)
+
+target_sources(EngineMaxim PRIVATE 
+"../Samples/Common_Files/OS.cpp"
+"../Samples/Common_Files/Camera.cpp"
+"../Samples/Common_Files/CookbookSampleFramework.cpp"
+"../Samples/Common_Files/OrbitingCamera.cpp")
+
+target_include_directories(EngineMaxim PRIVATE "./Chess")
+
+include(FetchContent)
+
+FetchContent_Declare(
+	glm
+	GIT_REPOSITORY	https://github.com/g-truc/glm.git
+	GIT_TAG 	bf71a834948186f4097caa076cd2663c69a10e1e #refs/tags/1.0.1
 )
 
-add_subdirectory(Cookbook)
-
-
-add_custom_command(TARGET EngineMaxim POST_BUILD
-                   COMMAND ${CMAKE_COMMAND} -E copy_directory
-                       ${CMAKE_SOURCE_DIR}/Data/ ${CMAKE_BINARY_DIR}/Data/)
+FetchContent_MakeAvailable(glm)
 
 if(WIN32)
     
     add_definitions(-DVK_USE_PLATFORM_WIN32_KHR)
-    target_link_libraries(EngineMaxim PUBLIC Cookbook)
+    target_link_libraries(EngineMaxim PRIVATE Cookbook)
 
 endif(WIN32)
 
@@ -55,4 +53,4 @@ if(UNIX)
 
 endif(UNIX)
 
-target_include_directories(EngineMaxim PUBLIC "./Cookbook" "./Samples/Common_Files" "./Library/Common_Files" "./Library/Source_Files" "./External")
+target_include_directories(EngineMaxim PRIVATE "./Cookbook" "./Samples/Common_Files" "./Library/Common_Files" "./Library/Source_Files" "./External" "./MaximEngine" "./build/_deps/glm-src/")

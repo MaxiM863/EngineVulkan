@@ -845,14 +845,14 @@ namespace VulkanCookbook {
 namespace VulkanCookbook {
 
   struct FrameResources {
-    VkCommandBuffer             CommandBuffer;
+    std::vector<VkCommandBuffer> CommandBuffer;
     VkDestroyer(VkSemaphore)    ImageAcquiredSemaphore;
     VkDestroyer(VkSemaphore)    ReadyToPresentSemaphore;
     VkDestroyer(VkFence)        DrawingFinishedFence;
     VkDestroyer(VkImageView)    DepthAttachment;
     VkDestroyer(VkFramebuffer)  Framebuffer;
 
-    FrameResources( VkCommandBuffer            & command_buffer,
+    FrameResources( std::vector<VkCommandBuffer>            command_buffer,
                     VkDestroyer(VkSemaphore)   & image_acquired_semaphore,
                     VkDestroyer(VkSemaphore)   & ready_to_present_semaphore,
                     VkDestroyer(VkFence)       & drawing_finished_fence,
@@ -871,7 +871,7 @@ namespace VulkanCookbook {
 
     FrameResources& operator=(FrameResources && other) {
       if( this != &other ) {
-        VkCommandBuffer command_buffer = CommandBuffer;
+        std::vector<VkCommandBuffer> command_buffer = CommandBuffer;
 
         CommandBuffer = other.CommandBuffer;
         other.CommandBuffer = command_buffer;
@@ -896,7 +896,7 @@ namespace VulkanCookbook {
                                                                                 std::vector<VkImageView> const                                & swapchain_image_views,
                                                                                 VkRenderPass                                                    render_pass,
                                                                                 std::vector<WaitSemaphoreInfo> const                          & wait_infos,
-                                                                                std::function<bool(VkCommandBuffer, uint32_t, VkFramebuffer)>   record_command_buffer,
+                                                                                std::function<bool(std::vector<VkCommandBuffer>, uint32_t, VkFramebuffer)>   record_command_buffer,
                                                                                 std::vector<FrameResources>                                   & frame_resources );
 
 } // namespace VulkanCookbook
