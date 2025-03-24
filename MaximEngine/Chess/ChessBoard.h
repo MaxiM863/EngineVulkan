@@ -5,7 +5,7 @@
 
 #include "ChessPartPion.h"
 #include "ChessPartTour.h"
-#include "ChessPartKing"
+#include "ChessPartKing.h"
 #include "ChessPartQueen.h"
 #include "ChessPartCavalier.h"
 #include "ChessPartFou.h"

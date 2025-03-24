@@ -293,11 +293,15 @@ WindowFramework::WindowFramework( const char               * window_title,
         break;
           
         case ButtonPress:
-          sample.MouseClick(0, true);
+          if(event->xbutton.button == 3)
+            sample.MouseClick(1, true);
+          else sample.MouseClick(0, true);
         break;
 
         case ButtonRelease:
-          sample.MouseClick(0, false);
+          if(event->xbutton.button == 3)
+            sample.MouseClick(1, false);
+          else sample.MouseClick(0, false);
         break;
 
         case ConfigureNotify:
