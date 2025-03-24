@@ -33,6 +33,11 @@ if(WIN32)
     add_definitions(-DVK_USE_PLATFORM_WIN32_KHR)
     target_link_libraries(EngineMaxim PRIVATE Cookbook)
 
+    add_custom_command(TARGET ${PROJECT_NAME}  POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+                ${CMAKE_CURRENT_SOURCE_DIR}/Data
+                ${CMAKE_CURRENT_BINARY_DIR}/Debug/Data)
+
 endif(WIN32)
 
 if(UNIX)
@@ -51,11 +56,11 @@ if(UNIX)
 
     target_link_libraries(EngineMaxim ${X11_LIBRARIES} Cookbook)
 
+    add_custom_command(TARGET ${PROJECT_NAME}  POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+                ${CMAKE_CURRENT_SOURCE_DIR}/Data
+                ${CMAKE_CURRENT_BINARY_DIR}/Data)
+
 endif(UNIX)
 
 target_include_directories(EngineMaxim PRIVATE "./Cookbook" "./Samples/Common_Files" "./Library/Common_Files" "./Library/Source_Files" "./External" "./MaximEngine" "./build/_deps/glm-src/")
-
-add_custom_command(TARGET ${PROJECT_NAME}  POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-                ${CMAKE_CURRENT_SOURCE_DIR}/Data
-                ${CMAKE_CURRENT_BINARY_DIR}/Debug/Data)
