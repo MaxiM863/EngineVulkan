@@ -11,22 +11,22 @@ class ChessPartPion : public ChessPart
             this->colorPart = color;
         }
 
-        std::vector<int> deplacementPossible(int position, ChessBoard board) override {
+        std::vector<int> deplacementPossible(int position, std::vector<int> occupe, int color, bool isPion) override {
             
             std::vector<int> rep;
 
             int switchColor = 1;
 
-            if(board.getCaseBoard(board.getPosX(position), board.getPosY(position))->colorPart == 1) switchColor = -1;
+            if(color == 1) switchColor = -1;
             
-            if(position + switchColor * 8 < 64 && position + switchColor * 8 >= 0 && board.getCaseBoard(board.getPosX(position + switchColor * 8), board.getPosY(position + switchColor * 8)) == nullptr)
+            if(position + switchColor * 8 < 64 && position + switchColor * 8 >= 0 && !isOccupied(position + switchColor * 8, occupe))
             {
                 rep.push_back(position + switchColor * 8);
             }
 
             if(position/8 == 6 || position/8 == 1)
             {
-                if(position + switchColor * 16 < 64 && position + switchColor * 16 >= 0 && board.getCaseBoard(board.getPosX(position + switchColor * 16), board.getPosY(position + switchColor * 16)) == nullptr)
+                if(position + switchColor * 16 < 64 && position + switchColor * 16 >= 0 && !isOccupied(position + switchColor * 16, occupe))
                 {
                     rep.push_back(position + switchColor * 16);
                 }
@@ -34,25 +34,25 @@ class ChessPartPion : public ChessPart
 
             if(position%8 == 7)
             {
-                if(board.getCaseBoard(board.getPosX(position) - 1 * switchColor, board.getPosY(position)) != nullptr)
+                if(isOccupied(position - 1, occupe))
                 {
                     rep.push_back(position - switchColor * (1));
                 }
             }
             else if(position%8 == 0)
             {
-                if(board.getCaseBoard(board.getPosX(position) + 1 * switchColor, board.getPosY(position)) != nullptr)
+                if(isOccupied(position + 1, occupe))
                 {
                     rep.push_back(position + switchColor * (1));
                 }
             }
             else
             {
-                if(board.getCaseBoard(board.getPosX(position) + 1 * switchColor, board.getPosY(position)) != nullptr)
+                if(isOccupied(position + 1, occupe))
                 {
                     rep.push_back(position + switchColor * (1));
                 }
-                if(board.getCaseBoard(board.getPosX(position) - 1 * switchColor, board.getPosY(position)) != nullptr)
+                if(isOccupied(position - 1, occupe))
                 {
                     rep.push_back(position - switchColor * (1));
                 }
@@ -68,6 +68,22 @@ class ChessPartPion : public ChessPart
         
 
     private:
+
+        bool isOccupied(int position, std::vector<int> present)
+        {
+            bool rep = false;
+
+            for(int i = 0; i < present.size(); i++)
+            {
+                if(present.at(i) == position)
+                {
+                    rep = true;
+                    break;
+                }
+            }
+
+            return rep;
+        }
 
         int bufferDraw = 0;
 };

@@ -11,54 +11,79 @@ class ChessPartTour : public ChessPart
             this->colorPart = color;
         }
 
-        std::vector<int> deplacementPossible(int position, ChessBoard board) override {
+        std::vector<int> deplacementPossible(int position, std::vector<int> occupe, int color, bool isPion) override {
             
             std::vector<int> rep;
 
             for(int i = 0; i < 8; i++)
             {
-                if(position - (i+1)*(8) >= 0)
+
+                if(position + (i+1)*(8) < 64)
                 {
-                    rep.push_back(position - (i+1)*(8));
-                    if(board.getCaseBoard(board.getPosX(position - (i+1)*(8)), board.getPosY(position - (i+1)*(8))) != nullptr)
+                    
+                    if(isOccupied(position+(i+1)*(8), occupe))
                     {
+                    
                         break;
+                    }
+                    else
+                    {
+                        
+                        rep.push_back(position+(i+1)*(8));
                     }
                 }
             }
 
             for(int i = 0; i < 8; i++)
             {
-                if(position - (i+1)*(1) >= 0)
+                if(position + (i+1)*(1) < 64)
                 {
-                    rep.push_back(position - (i+1)*(1));
-                    if(board.getCaseBoard(board.getPosX(position - (i+1)*(1)), board.getPosY(position - (i+1)*(1))) != nullptr)
+                    
+                    if(isOccupied(position+(i+1)*(1), occupe))
                     {
+                    
                         break;
+                    }
+                    else
+                    {
+                        
+                        rep.push_back(position+(i+1)*(1));
                     }
                 }
             }
 
             for(int i = 0; i < 8; i++)
             {
-                if(position + (i+1)*(8) >= 0)
+                if(position - (i+1)*(1) < 64)
                 {
-                    rep.push_back(position + (i+1)*(8));
-                    if(board.getCaseBoard(board.getPosX(position + (i+1)*(8)), board.getPosY(position + (i+1)*(8))) != nullptr)
+                    
+                    if(isOccupied(position - (i+1)*(1), occupe))
                     {
+                    
                         break;
+                    }
+                    else
+                    {
+                        
+                        rep.push_back(position - (i+1)*(1));
                     }
                 }
             }
 
             for(int i = 0; i < 8; i++)
             {
-                if(position + (i+1)*(1) >= 0)
+                if(position - (i+1)*(8) < 64)
                 {
-                    rep.push_back(position + (i+1)*(1));
-                    if(board.getCaseBoard(board.getPosX(position + (i+1)*(1)), board.getPosY(position + (i+1)*(1))) != nullptr)
+                    
+                    if(isOccupied(position - (i+1)*(8), occupe))
                     {
+                    
                         break;
+                    }
+                    else
+                    {
+                        
+                        rep.push_back(position - (i+1)*(8));
                     }
                 }
             }
@@ -73,6 +98,22 @@ class ChessPartTour : public ChessPart
         
 
     private:
+
+        bool isOccupied(int position, std::vector<int> present)
+        {
+            bool rep = false;
+
+            for(int i = 0; i < present.size(); i++)
+            {
+                if(present.at(i) == position)
+                {
+                    rep = true;
+                    break;
+                }
+            }
+
+            return rep;
+        }
 
         int bufferDraw = 1;
 };

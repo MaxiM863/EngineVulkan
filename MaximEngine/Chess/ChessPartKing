@@ -1,6 +1,7 @@
 #include "ChessPart.h"
 #include "ChessMesh.h"
 
+
 class ChessPartKing : public ChessPart
 {
     public:
@@ -11,7 +12,7 @@ class ChessPartKing : public ChessPart
             this->colorPart = color;
         }
 
-        std::vector<int> deplacementPossible(int position, ChessBoard board) override {
+        std::vector<int> deplacementPossible(int position, std::vector<int> occupe, int color, bool isPion) override {
      
             std::vector<int> rep;
 

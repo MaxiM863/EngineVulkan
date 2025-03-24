@@ -1,3 +1,6 @@
+#ifndef CHESS_BOARD
+#define CHESS_BOARD
+
 #include<vector>
 
 #include "ChessPartPion.h"
@@ -86,3 +89,5 @@ class ChessBoard
 
         ChessMesh meshes;
 };
+
+#endif

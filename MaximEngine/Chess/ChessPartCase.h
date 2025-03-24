@@ -11,7 +11,7 @@ class ChessPartCase : public ChessPart
             this->colorPart = color;
         }
 
-        std::vector<int> deplacementPossible(int position, ChessBoard board) override {
+        std::vector<int> deplacementPossible(int position, std::vector<int> occupe, int color, bool isPion) override {
             
             return std::vector<int>();
         }

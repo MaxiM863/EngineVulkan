@@ -827,8 +827,26 @@ private:
 
           if(touched != -1)
           {
-            board.movePart(meshPos, touched);
-            meshPos = -1;
+            
+            std::vector<int> occupe;
+
+            for(int i = 0; i<64; i++)
+            {
+              if(board.getCaseBoard(board.getPosX(i), board.getPosY(i)) != nullptr) occupe.push_back(i);
+            }
+
+            std::vector<int> possibilites = board.getCaseBoard(board.getPosX(meshPos), board.getPosY(meshPos))->deplacementPossible(meshPos, occupe, board.getCaseBoard(board.getPosX(meshPos), board.getPosY(meshPos))->colorPart, board.getCaseBoard(board.getPosX(meshPos), board.getPosY(meshPos))->getBufferDraw() ==  0);
+            
+            for(int i = 0; i < possibilites.size(); i++)
+            {
+              if(possibilites.at(i) == touched)
+              {
+            
+                board.movePart(meshPos, touched);                
+              }
+            }
+            
+            meshPos = -1;            
           }        
         }
       }
