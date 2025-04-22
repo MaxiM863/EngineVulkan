@@ -11,7 +11,7 @@ class ChessPartPion : public ChessPart
             this->colorPart = color;
         }
 
-        std::vector<int> deplacementPossible(int position, std::vector<int> occupe, int color, bool isPion) override {
+        std::vector<int> deplacementPossible(int position, std::vector<int> occupe, std::vector<ChessPart*> parts, int color, bool isPion, int& mange) override {
             
             std::vector<int> rep;
 
@@ -24,6 +24,16 @@ class ChessPartPion : public ChessPart
                 rep.push_back(position + switchColor * 8);
             }
 
+            if(position + switchColor * 8 + 1 < 64 && position + switchColor * 8 + 1 >= 0 && isOpponant(position + switchColor * 8 + 1, color, parts))
+            {
+                rep.push_back(position + switchColor * 8 + 1);
+            }
+
+            if(position + switchColor * 8 - 1 < 64 && position + switchColor * 8 - 1 >= 0 && isOpponant(position + switchColor * 8 - 1, color, parts))
+            {
+                rep.push_back(position + switchColor * 8 - 1);
+            }
+
             if(position/8 == 6 || position/8 == 1)
             {
                 if(position + switchColor * 16 < 64 && position + switchColor * 16 >= 0 && !isOccupied(position + switchColor * 16, occupe))
@@ -34,27 +44,31 @@ class ChessPartPion : public ChessPart
 
             if(position%8 == 7)
             {
-                if(isOccupied(position - 1, occupe))
+                if(isOccupied(position - 1, occupe) && isOpponant(position - 1, color, parts))
                 {
-                    rep.push_back(position - switchColor * (1));
+                    rep.push_back(position + 8 * switchColor - 1);
+                    mange = position - 1;
                 }
             }
             else if(position%8 == 0)
             {
-                if(isOccupied(position + 1, occupe))
+                if(isOccupied(position + 1, occupe) && isOpponant(position + 1, color, parts))
                 {
-                    rep.push_back(position + switchColor * (1));
+                    rep.push_back(position + 8 * switchColor + 1 );
+                    mange = position + 1;
                 }
             }
             else
             {
-                if(isOccupied(position + 1, occupe))
+                if(isOccupied(position + 1, occupe) && isOpponant(position + 1, color, parts))
                 {
-                    rep.push_back(position + switchColor * (1));
+                    rep.push_back(position + 8 * switchColor + 1);
+                    mange = position + 1;
                 }
-                if(isOccupied(position - 1, occupe))
+                if(isOccupied(position - 1, occupe) && isOpponant(position -1, color, parts))
                 {
-                    rep.push_back(position - switchColor * (1));
+                    rep.push_back(position + 8 * switchColor - 1);
+                    mange = position - 1;
                 }
             }           
 

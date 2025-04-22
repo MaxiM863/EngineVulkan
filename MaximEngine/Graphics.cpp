@@ -1,4 +1,3 @@
-#include "CookbookSampleFramework.h"
 #include "Graphics.h"
 
 using namespace VulkanCookbook;
@@ -64,6 +63,12 @@ OrbitingCamera                      Camera;
 
 float rotMax;
 
+////////////////////////////////////////////////////////////////
+
+std::vector<BYTE> dataText;
+
+sdlTextEngine* aas;
+
 public:
 
     
@@ -86,6 +91,10 @@ private:
     bool Initialize(WindowParameters window_parameters)
     {
 
+     
+
+      //dataText = aas.sdlTextEngineT();
+
       meshPos = -2;
 
       Camera = OrbitingCamera( Vector3{ 0.0f, 0.0f, 0.0f }, 8.0f, 0.0f, 180.0f );
@@ -93,6 +102,14 @@ private:
       if( !InitializeVulkan( window_parameters ) ) {
         return false;
       }
+
+      aas = new sdlTextEngine();
+
+      interGraph* klj = new interGraph(this);
+
+      
+      aas->Initialize(window_parameters, klj, FramesResources.front().CommandBuffer.at(0));
+      aas->Init(nullptr, Camera);
 
       // Combined image sampler
       int width = 1;
@@ -665,7 +682,7 @@ private:
         
         SetScissorStateDynamically( command_buffer[i], 0, { scissor } );
 
-        for(int z = 0; z < 8; z++)
+        /*for(int z = 0; z < 8; z++)
         {
 
           for(int m = 0; m < 8; m++)
@@ -734,8 +751,10 @@ private:
               DrawGeometry( command_buffer[i], Model.at(6).Parts[0].VertexCount, 1, Model.at(6).Parts[0].VertexOffset, 0 );
             }
           }
-        }
-        
+        }*/
+
+
+        aas->Draw(command_buffer[0]);
 
         EndRenderPass( command_buffer[i] );
 
@@ -829,13 +848,22 @@ private:
           {
             
             std::vector<int> occupe;
+            std::vector<ChessPart*> parts;
 
             for(int i = 0; i<64; i++)
             {
-              if(board.getCaseBoard(board.getPosX(i), board.getPosY(i)) != nullptr) occupe.push_back(i);
+              if(board.getCaseBoard(board.getPosX(i), board.getPosY(i)) != nullptr)
+                {
+
+                  occupe.push_back(i);                 
+                } 
+                
+                parts.push_back(board.getCaseBoard(board.getPosX(i), board.getPosY(i)));
             }
 
-            std::vector<int> possibilites = board.getCaseBoard(board.getPosX(meshPos), board.getPosY(meshPos))->deplacementPossible(meshPos, occupe, board.getCaseBoard(board.getPosX(meshPos), board.getPosY(meshPos))->colorPart, board.getCaseBoard(board.getPosX(meshPos), board.getPosY(meshPos))->getBufferDraw() ==  0);
+            int dead = -1;
+
+            std::vector<int> possibilites = board.getCaseBoard(board.getPosX(meshPos), board.getPosY(meshPos))->deplacementPossible(meshPos, occupe, parts, board.getCaseBoard(board.getPosX(meshPos), board.getPosY(meshPos))->colorPart, board.getCaseBoard(board.getPosX(meshPos), board.getPosY(meshPos))->getBufferDraw() ==  0, dead);
             
             for(int i = 0; i < possibilites.size(); i++)
             {
@@ -845,6 +873,8 @@ private:
                 board.movePart(meshPos, touched);                
               }
             }
+
+            if(dead != -1) board.deletePart(dead);
             
             meshPos = -1;            
           }        
@@ -921,14 +951,49 @@ private:
 
           float selectedTranslation = 0.0f;
 
-          if(meshPos != -1) selectedTranslation = 1.0f;
-        
+          if(meshPos != -1) selectedTranslation = 0.25f;
+
+          std::vector<int> occupe;
+          std::vector<int> possibilites;
+          std::vector<ChessPart*> parts;
+
+          if(meshPos != -2 && meshPos != -1)
+          {
+            for(int i = 0; i < 64; i++)
+            {
+              if(board.getCaseBoard(board.getPosX(i), board.getPosY(i)) != nullptr)
+              {
+                occupe.push_back(i);
+              }
+              
+              parts.push_back(board.getCaseBoard(board.getPosX(i), board.getPosY(i)));
+            }
+
+            int dead = -1;
+
+            possibilites = board.getCaseBoard(board.getPosX(meshPos), board.getPosY(meshPos))->deplacementPossible(meshPos, occupe, parts, board.getCaseBoard(board.getPosX(meshPos), board.getPosY(meshPos))->colorPart, board.getCaseBoard(board.getPosX(meshPos), board.getPosY(meshPos))->getBufferDraw() ==  0, dead);
+          }
+
           for(int i = 0; i < 64; i++)
           {
             Matrix4x4 rotation_matrix =  PrepareRotationMatrix( 0, { 1.0f, 0.0f, 0.0f } ) * PrepareRotationMatrix( 0, { 0.0f, -1.0f, 0.0f } );
-            Matrix4x4 translation_matrix;
-            if(meshPos == i) translation_matrix = PrepareTranslationMatrix( i % 8 * 1.5f-5.5f, selectedTranslation, i / 8 * 1.5f-5.5f );
-            else translation_matrix = PrepareTranslationMatrix( i % 8 * 1.5f-5.5f, 0.0f, i / 8 * 1.5f-5.5f );
+            Matrix4x4 translation_matrix = PrepareTranslationMatrix(0,0,0);
+
+            for(int g = 0; g < possibilites.size(); g++)
+            {
+              if(possibilites.at(g) == i)
+              {
+            
+                translation_matrix = PrepareTranslationMatrix( 0, -3*selectedTranslation, 0 );
+              }
+            }
+
+            if(meshPos == i)
+            {
+
+              translation_matrix = PrepareTranslationMatrix( i % 8 * 1.5f-5.5f, selectedTranslation, i / 8 * 1.5f-5.5f );              
+            }
+            else translation_matrix = translation_matrix * PrepareTranslationMatrix( i % 8 * 1.5f-5.5f, 0.0f, i / 8 * 1.5f-5.5f );
             Matrix4x4 model_view_matrix = translation_matrix * rotation_matrix;
 
             Matrix4x4 view = Camera.GetMatrix();

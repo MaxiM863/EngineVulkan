@@ -12,7 +12,7 @@ class ChessPartFou : public ChessPart
             this->colorPart = color;
         }
 
-        std::vector<int> deplacementPossible(int position, std::vector<int> occupe, int color, bool isPion) override {
+        std::vector<int> deplacementPossible(int position, std::vector<int> occupe, std::vector<ChessPart*> parts, int color, bool isPion, int& mange) override {
             
             std::vector<int> rep;
 
@@ -21,17 +21,9 @@ class ChessPartFou : public ChessPart
 
                 if(position + (i+1)*(8+1) < 64)
                 {
-                    
-                    if(isOccupied(position+(i+1)*(8+1), occupe))
-                    {
-                    
-                        break;
-                    }
-                    else
-                    {
-                        
-                        rep.push_back(position+(i+1)*(8+1));
-                    }
+                
+                    if(isOpponant(position + (i+1)*(8+1), color, parts)) rep.push_back(position+(i+1)*(8+1));
+                    if(isOccupied(position+(i+1)*(8+1), occupe) || (position + (i+1)*(8+1)) % 8 == 7) break;                    
                 }
             }
 
@@ -39,53 +31,26 @@ class ChessPartFou : public ChessPart
             {
                 if(position + (i+1)*(8-1) < 64)
                 {
-                    
-                    if(isOccupied(position+(i+1)*(8-1), occupe))
-                    {
-                    
-                        break;
-                    }
-                    else
-                    {
-                        
-                        rep.push_back(position+(i+1)*(8-1));
-                    }
+                    if(isOpponant(position + (i+1)*(8-1), color, parts)) rep.push_back(position+(i+1)*(8-1));
+                    if(isOccupied(position+(i+1)*(8-1), occupe) || (position + (i+1)*(8-1)) % 8 == 0) break;
                 }
             }
 
             for(int i = 0; i < 8; i++)
             {
-                if(position - (i+1)*(8+1) < 64)
+                if(position - (i+1)*(8+1) >= 0)
                 {
-                    
-                    if(isOccupied(position - (i+1)*(8 + 1), occupe))
-                    {
-                    
-                        break;
-                    }
-                    else
-                    {
-                        
-                        rep.push_back(position - (i+1)*(8 + 1));
-                    }
+                    if(isOpponant(position - (i+1)*(8+1), color, parts)) rep.push_back(position - (i+1)*(8 + 1));
+                    if(isOccupied(position - (i+1)*(8 + 1), occupe) || (position - (i+1)*(8+1)) % 8 == 7) break;
                 }
             }
 
             for(int i = 0; i < 8; i++)
             {
-                if(position - (i+1)*(8-1) < 64)
+                if(position - (i+1)*(8-1) >= 0)
                 {
-                    
-                    if(isOccupied(position - (i+1)*(8-1), occupe))
-                    {
-                    
-                        break;
-                    }
-                    else
-                    {
-                        
-                        rep.push_back(position - (i+1)*(8-1));
-                    }
+                    if(isOpponant(position - (i+1)*(8-1), color, parts)) rep.push_back(position - (i+1)*(8-1));
+                    if(isOccupied(position - (i+1)*(8-1), occupe) || (position + (i+1)*(8+1)) % 8 == 0) break;
                 }
             }
 
@@ -100,21 +65,9 @@ class ChessPartFou : public ChessPart
 
     private:
 
-        bool isOccupied(int position, std::vector<int> present)
-        {
-            bool rep = false;
+        
 
-            for(int i = 0; i < present.size(); i++)
-            {
-                if(present.at(i) == position)
-                {
-                    rep = true;
-                    break;
-                }
-            }
 
-            return rep;
-        }
 
         int bufferDraw = 4;
 };
