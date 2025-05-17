@@ -762,7 +762,7 @@ namespace VulkanCookbook {
 
       descriptor_sets.resize( descriptor_set_layouts.size() );
 
-      VkResult result = vkAllocateDescriptorSets( logical_device, &descriptor_set_allocate_info, descriptor_sets );
+      VkResult result = vkAllocateDescriptorSets( logical_device, &descriptor_set_allocate_info, descriptor_sets.data() );
       if( VK_SUCCESS != result ) {
         std::cout << "Could not allocate descriptor sets." << std::endl;
         return false;

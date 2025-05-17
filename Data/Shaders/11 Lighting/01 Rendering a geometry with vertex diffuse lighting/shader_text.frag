@@ -11,5 +11,5 @@ void main() {
 
   vec3 color = texture( ImageSampler, vert_texcoord ).rgb; 
   
-  frag_color = vec4( 1.0f,1.0f,1.0f,1.0f ); 
+  frag_color = vec4( 1.0f,0.5f,1.0f,1.0f ); 
 }
