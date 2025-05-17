@@ -29,30 +29,12 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(glm)
 
-include(FetchContent)
 
-FetchContent_Declare(
-	SDL3
-	GIT_REPOSITORY	https://github.com/libsdl-org/SDL.git
-	GIT_TAG 	release-3.2.6
-)
-
-FetchContent_MakeAvailable(SDL3)
-
-include(FetchContent)
-
-FetchContent_Declare(
-	sdlttf
-	GIT_REPOSITORY	https://github.com/libsdl-org/SDL_ttf.git
-	GIT_TAG 	release-3.2.2
-)
-
-FetchContent_MakeAvailable(sdlttf)
 
 if(WIN32)
     
     add_definitions(-DVK_USE_PLATFORM_WIN32_KHR)
-    target_link_libraries(EngineMaxim PUBLIC Cookbook SDL3::SDL3 SDL3_ttf::SDL3_ttf)
+    target_link_libraries(EngineMaxim PUBLIC Cookbook)
 
     add_custom_command(TARGET ${PROJECT_NAME}  POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
@@ -84,4 +66,4 @@ if(UNIX)
 
 endif(UNIX)
 
-target_include_directories(EngineMaxim PRIVATE "./Cookbook" "./Samples/Common_Files" "./Library/Common_Files" "./Library/Source_Files" "./External" "./MaximEngine" "./build/_deps/glm-src/" "./build/_deps/sdl-src/include/" "./build/_deps/sdlttf-src/include/" "MaximEngine/Chess/")
+target_include_directories(EngineMaxim PRIVATE "./Cookbook" "./Samples/Common_Files" "./Library/Common_Files" "./Library/Source_Files" "./External" "./MaximEngine" "./build/_deps/glm-src/" "MaximEngine/Chess/")
