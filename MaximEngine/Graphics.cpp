@@ -25,9 +25,10 @@ class Graphics : public VulkanCookbook::VulkanCookbookSample
 
 public:
 
+  HWND* hWnd;
 
 
-virtual bool Initialize( WindowParameters window_parameters ) override {
+virtual bool Initialize( WindowParameters window_parameters, HWND hWnd ) override {
 
   if( !InitializeVulkan( window_parameters, nullptr, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, false ) ) {
 
@@ -46,7 +47,14 @@ virtual bool Initialize( WindowParameters window_parameters ) override {
   aas = new sdlTextEngine();
 
   InitVkDestroyer( LogicalDevice, ImageView );
-  aas->Initialize(LogicalDevice.Object.Handle, PhysicalDevice, GraphicsQueue, FramesResources.front().CommandBuffer[0], Sampler.Object.Handle, Image.Object.Handle, 
+
+
+  float pos_x0 = -0.5f;
+  float pos_x1 = 0.5f;
+  float pos_y0 = -0.25f;
+  float pos_y1 = 0.25f;
+
+  aas->Initialize("Hello you !!!", 42, 0x00FF0000, 0x00000000, pos_x0, pos_x1, pos_y0, pos_y1, hWnd, 1000, 500, LogicalDevice.Object.Handle, PhysicalDevice, GraphicsQueue, FramesResources.front().CommandBuffer[0], Sampler.Object.Handle, Image.Object.Handle, 
                   ImageView.Object.Handle, Swapchain, RenderPass.Object.Handle, PipelineLayout.Object.Handle, GraphicsPipeline.Object.Handle, DescriptorSets, DescriptorSetLayout.Object.Handle, DescriptorPool.Object.Handle, VertexBuffer.Object.Handle);
 
 

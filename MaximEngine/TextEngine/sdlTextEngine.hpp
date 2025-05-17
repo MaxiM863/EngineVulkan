@@ -11,6 +11,8 @@
 #include "CookbookSampleFramework.h"
 #include "OrbitingCamera.h"
 
+
+
 using namespace Gdiplus;
 //using namespace VulkanCookbook;
 
@@ -65,7 +67,7 @@ class sdlTextEngine
     
         sdlTextEngine(){};   
     
-        std::vector<BYTE> sdlTextEngineT() {
+        std::vector<BYTE> sdlTextEngineT(int width, int height, HWND hWnd, int fontSize, int fontColor, int backGColor, std::string s) {
 
           GdiplusStartupInput gdiplusStartupInput;
           ULONG_PTR gdiplusToken;
@@ -73,31 +75,42 @@ class sdlTextEngine
       
           // Create a font
           tagLOGFONTW logfont = {0};
-          logfont.lfHeight = 48; // Font height
+          logfont.lfHeight = fontSize; // Font height
           wcscpy_s(logfont.lfFaceName, 6, L"Arial"); // Font name
       
           HFONT hFont = CreateFontIndirectW(&logfont);
       
+          //HDC hdc = GetDC(hWnd);
+
+          // Create a compatible DC, which is used in a BitBlt from the window DC.
+          HDC hdc = CreateCompatibleDC(NULL);
+
           // Create a memory device context
-          HDC hdc = CreateCompatibleDC(nullptr);
+          // = CreateCompatibleDC(nullptr);
           SelectObject(hdc, hFont);
       
           // Create a bitmap
-          HBITMAP hBitmap = CreateCompatibleBitmap(hdc, 300, 100);
+          HBITMAP hBitmap = CreateBitmap(width, height, 1, 32, nullptr);
           SelectObject(hdc, hBitmap);
       
           // Set text color and background
-          SetTextColor(hdc, RGB(0, 0, 0));
-          SetBkColor(hdc, RGB(255, 255, 255));
-          RECT rect = {0, 0, 300, 100};
+          
+          SetTextColor(hdc, fontColor);
+          SetBkColor(hdc, backGColor);
+          RECT rect = {0, 0, width, height};
+          
           FillRect(hdc, &rect, (HBRUSH)GetStockObject(WHITE_BRUSH));
       
+          
           // Draw text
-          const wchar_t* text = L"Hello, World!";
-          DrawTextW(hdc, text, -1, &rect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+
+          std::wstring stemp = std::wstring(s.begin(), s.end());
+          LPCWSTR sw = stemp.c_str();
+
+          DrawTextW(hdc, sw, -1, &rect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
       
           // Save the bitmap to a file
-          std::vector<BYTE> dataR = HBitmapToArray(hBitmap);
+          std::vector<BYTE> dataR = HBitmapToArray(hBitmap, width, height);
       
           // Cleanup
           DeleteObject(hBitmap);
@@ -108,7 +121,7 @@ class sdlTextEngine
         return dataR;        
     }
 
-    std::vector<BYTE> HBitmapToArray(HBITMAP hBitmap) {
+    std::vector<BYTE> HBitmapToArray(HBITMAP hBitmap, int width, int height) {
         
       BITMAP bmp;
       GetObjectW(hBitmap, sizeof(BITMAP), &bmp);
@@ -128,8 +141,9 @@ class sdlTextEngine
       HDC hdc = GetDC(NULL);
       GetDIBits(hdc, hBitmap, 0, bmp.bmHeight, buffer.data(), (BITMAPINFO*)&bi, DIB_RGB_COLORS);
       ReleaseDC(NULL, hdc);
+     
 
-      createBMP(buffer, 300, 100, "output.bmp");
+      //createBMP(buffer, width, height, "output.bmp");
   
       return buffer;
     }
@@ -160,7 +174,7 @@ class sdlTextEngine
       printf("BMP header written to output.bmp\n");
     }
     
-    bool Initialize(VkDevice LogicalDevice, VkPhysicalDevice PhysicalDevice, QueueParameters& GraphicsQueue, VkCommandBuffer& CommandBuffer, VkSampler& Sampler, VkImage& Image, VkImageView& ImageView, SwapchainParameters& Swapchain, VkRenderPass& RenderPass,
+    bool Initialize(std::string text, int fontSize, int fontColor, int backGColor, float pos_x0, float pos_x1, float pos_y0, float pos_y1, HWND hWnd, int width, int height, VkDevice LogicalDevice, VkPhysicalDevice PhysicalDevice, QueueParameters& GraphicsQueue, VkCommandBuffer& CommandBuffer, VkSampler& Sampler, VkImage& Image, VkImageView& ImageView, SwapchainParameters& Swapchain, VkRenderPass& RenderPass,
                     VkPipelineLayout& PipelineLayout, VkPipeline& GraphicsPipeline, std::vector<VkDescriptorSet>& DescriptorSets, VkDescriptorSetLayout& DescriptorSetLayout, VkDescriptorPool& DescriptorPool, VkBuffer& VertexBuffer)
     {
       
@@ -171,9 +185,8 @@ class sdlTextEngine
       
 
       // Combined image sampler
-      int width = 300;
-      int height = 100;
-      std::vector<unsigned char> image_data = sdlTextEngineT();
+      
+      std::vector<unsigned char> image_data = sdlTextEngineT(width, height, hWnd, fontSize, fontColor, backGColor, text);
 
       
       InitVkDestroyer( LogicalDevice, ImageMemory );
@@ -451,10 +464,10 @@ class sdlTextEngine
       // Vertex data
       std::vector<float> vertices = {
         // positions          // texcoords
-        -0.75f, -0.75f, 0.0f, 0.0f, 0.0f,
-        -0.75f, 0.75f, 0.0f,  0.0f, 1.0f,
-        0.75f, -0.75f, 0.0f,  1.0f, 0.0f,
-        0.75f, 0.75f, 0.0f,   1.0f, 1.0f,
+        pos_x0, pos_y0, 0.0f, 0.0f, 0.0f,
+        pos_x0, pos_y1, 0.0f, 0.0f, 1.0f,
+        pos_x1, pos_y0, 0.0f, 1.0f, 0.0f,
+        pos_x1, pos_y1, 0.0f, 1.0f, 1.0f,
       };
 
       //InitVkDestroyer( LogicalDevice, VertexBuffer );

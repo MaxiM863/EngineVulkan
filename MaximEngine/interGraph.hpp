@@ -33,7 +33,7 @@ class interGraph : public VulkanCookbook::VulkanCookbookSample
         //FramesResources = oop->FramesResources;
     }
 
-    bool  Initialize( WindowParameters window_parameters ) override {
+    bool  Initialize( WindowParameters window_parameters, HWND hWnd ) override {
 
         return true;
     }
