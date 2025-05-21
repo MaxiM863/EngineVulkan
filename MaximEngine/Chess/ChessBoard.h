@@ -77,6 +77,11 @@ class ChessBoard
             cases[from] = nullptr;
         }
 
+        void deletePart(int position)
+        {
+            cases[position] = nullptr;
+        }
+
         int getPosX(int num) { return num % 8; }
         int getPosY(int num) { return num / 8; }
 

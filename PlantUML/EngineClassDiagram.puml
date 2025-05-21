@@ -1,0 +1,101 @@
+@startuml classDiagram
+
+title <size:20><U+1F916> <color:#darkblue><u>Diagramme de classe Maxim Engine</u></color><U+1F916></size>
+
+package IA_MINMAX
+{
+
+  class main #Blue
+  {
+
+  }
+
+  struct TreeNode
+  {
+    + TreeNode()
+    + TreeNode(TreeNode*, TreeNode*[], Position)
+    ---
+    + TreeNode: parent
+    + TreeNode[]: childs
+    ---
+    + Position: positionBoard
+    + int: valeurChild
+  }
+
+  struct Position
+  {
+    + Position()
+    + Position(int, int)
+    ---
+    + char: xPos
+    + char: yPos
+  }
+
+  class Tree
+  {
+    + Tree(int)
+    + getTopTree() (return TreeNode*)
+    + addLevel(Position[], Position[])
+    + getTreeDepth() (return int)
+    - recursiveLeaf(TreeNode*, int&)
+    - recursiveAddNode(TreeNode*, Positon[], Position[], int)
+    ---
+    - TreeNode*: top
+    - int: boardSize
+  }
+
+  class MinMaxAlgo #LightPink
+  {
+    + MinMaxAlgo()
+    + ~MinMaxAlgo()
+    + MinMaxAlgo(MinMaxAlgo&)
+    ---
+    + Position: minMaxRun(Tree*, Position[], Position[])
+    + SetDataTree(Tree*)
+    + long: testUtility(TreeNode*, Position[])
+    + bool isFinished(Position[])
+  }
+
+  class GraphiqueSDL
+  {
+    + {static} initialize(int, int)
+    + {static} afficherUnFrame(Position&)
+    + {static} terminerFrame()
+    + {static} afficherFin(bool)
+    + {static} putBotData(Position)
+    + {static} putPlyData(Position)
+    ---
+    - {static} drawCircle(int, int, int, SDL_Renderer*)
+    - {static} drawBoard(SDL_Renderer*)
+    ---
+    - {static} SDL_Window*: window
+    - {static} SDL_Renderer*: renderer
+    ---
+    - {static} Position[]: botPlayed
+    - {static} Position[]: plyPlayed
+    ---
+    - {static} int: _width
+    - {static} int: _height
+  }
+
+
+  TreeNode o-up- Position
+  TreeNode -o Tree
+  Position ---- MinMaxAlgo
+  Tree -- MinMaxAlgo
+  Position -right-o GraphiqueSDL
+  Position -- Tree
+
+  main -up- GraphiqueSDL
+  main --- MinMaxAlgo
+  main -down- Tree
+}
+
+package "          SDL3        "
+{
+
+}
+
+GraphiqueSDL -- "          SDL3        "
+
+@enduml

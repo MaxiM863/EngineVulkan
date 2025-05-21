@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.0)
 
-add_library(Cookbook
+add_library(Cookbook STATIC
 
 "../Library/Source_Files/01_Instance_and_Devices/compacte.cpp"
 "../Library/Source_Files/01_Instance_and_Devices/compacte.h"

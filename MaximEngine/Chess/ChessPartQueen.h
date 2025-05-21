@@ -11,7 +11,7 @@ class ChessPartQueen : public ChessPart
             this->colorPart = color;
         }
 
-        std::vector<int> deplacementPossible(int position, std::vector<int> occupe, int color, bool isPion) override {
+        std::vector<int> deplacementPossible(int position, std::vector<int> occupe, std::vector<ChessPart*> parts, int color, bool isPion, int& mange) override {
             
             std::vector<int> rep;
 
@@ -20,17 +20,8 @@ class ChessPartQueen : public ChessPart
 
                 if(position + (i+1)*(8+1) < 64)
                 {
-                    
-                    if(isOccupied(position+(i+1)*(8+1), occupe))
-                    {
-                    
-                        break;
-                    }
-                    else
-                    {
-                        
-                        rep.push_back(position+(i+1)*(8+1));
-                    }
+                    rep.push_back(position+(i+1)*(8+1));
+                    if(isOccupied(position+(i+1)*(8+1), occupe)) break;                    
                 }
             }
 
@@ -38,53 +29,26 @@ class ChessPartQueen : public ChessPart
             {
                 if(position + (i+1)*(8-1) < 64)
                 {
-                    
-                    if(isOccupied(position+(i+1)*(8-1), occupe))
-                    {
-                    
-                        break;
-                    }
-                    else
-                    {
-                        
-                        rep.push_back(position+(i+1)*(8-1));
-                    }
+                    rep.push_back(position+(i+1)*(8-1));
+                    if(isOccupied(position+(i+1)*(8-1), occupe)) break;
                 }
             }
 
             for(int i = 0; i < 8; i++)
             {
-                if(position - (i+1)*(8+1) < 64)
+                if(position - (i+1)*(8+1) >= 0)
                 {
-                    
-                    if(isOccupied(position - (i+1)*(8 + 1), occupe))
-                    {
-                    
-                        break;
-                    }
-                    else
-                    {
-                        
-                        rep.push_back(position - (i+1)*(8 + 1));
-                    }
+                    rep.push_back(position - (i+1)*(8 + 1));
+                    if(isOccupied(position - (i+1)*(8 + 1), occupe)) break;
                 }
             }
 
             for(int i = 0; i < 8; i++)
             {
-                if(position - (i+1)*(8-1) < 64)
+                if(position - (i+1)*(8-1) >= 0)
                 {
-                    
-                    if(isOccupied(position - (i+1)*(8-1), occupe))
-                    {
-                    
-                        break;
-                    }
-                    else
-                    {
-                        
-                        rep.push_back(position - (i+1)*(8-1));
-                    }
+                    rep.push_back(position - (i+1)*(8-1));
+                    if(isOccupied(position - (i+1)*(8-1), occupe)) break;
                 }
             }
 
@@ -93,17 +57,8 @@ class ChessPartQueen : public ChessPart
 
                 if(position + (i+1)*(8) < 64)
                 {
-                    
-                    if(isOccupied(position+(i+1)*(8), occupe))
-                    {
-                    
-                        break;
-                    }
-                    else
-                    {
-                        
-                        rep.push_back(position+(i+1)*(8));
-                    }
+                    rep.push_back(position+(i+1)*(8));
+                    if(isOccupied(position+(i+1)*(8), occupe)) break;
                 }
             }
 
@@ -111,53 +66,26 @@ class ChessPartQueen : public ChessPart
             {
                 if(position + (i+1)*(1) < 64)
                 {
-                    
-                    if(isOccupied(position+(i+1)*(1), occupe))
-                    {
-                    
-                        break;
-                    }
-                    else
-                    {
-                        
-                        rep.push_back(position+(i+1)*(1));
-                    }
+                    rep.push_back(position+(i+1)*(1));
+                    if(isOccupied(position+(i+1)*(1), occupe)) break;
                 }
             }
 
             for(int i = 0; i < 8; i++)
             {
-                if(position - (i+1)*(1) < 64)
+                if(position - (i+1)*(1) >= 0)
                 {
-                    
-                    if(isOccupied(position - (i+1)*(1), occupe))
-                    {
-                    
-                        break;
-                    }
-                    else
-                    {
-                        
-                        rep.push_back(position - (i+1)*(1));
-                    }
+                    rep.push_back(position - (i+1)*(1));
+                    if(isOccupied(position - (i+1)*(1), occupe)) break;
                 }
             }
 
             for(int i = 0; i < 8; i++)
             {
-                if(position - (i+1)*(8) < 64)
+                if(position - (i+1)*(8) >= 0)
                 {
-                    
-                    if(isOccupied(position - (i+1)*(8), occupe))
-                    {
-                    
-                        break;
-                    }
-                    else
-                    {
-                        
-                        rep.push_back(position - (i+1)*(8));
-                    }
+                    rep.push_back(position - (i+1)*(8));
+                    if(isOccupied(position - (i+1)*(8), occupe)) break;
                 }
             }
 

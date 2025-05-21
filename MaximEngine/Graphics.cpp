@@ -1,4 +1,3 @@
-#include "CookbookSampleFramework.h"
 #include "Graphics.h"
 
 using namespace VulkanCookbook;
@@ -6,67 +5,196 @@ using namespace VulkanCookbook;
 class Graphics : public VulkanCookbook::VulkanCookbookSample
 {
 
-std::vector<VkBuffer>         vectorVertexBuffer;
-std::vector<VkDeviceMemory>   vectorVertexBufferMemory;
+  sdlTextEngine*                      aas;
+ 
+  vessel* vess;
 
-VkDestroyer(VkBuffer)               VertexBuffer2;
-VkDestroyer(VkDeviceMemory)         VertexBufferMemory2;
-
-VkDestroyer(VkImage)                    HeightMap;
-VkDestroyer(VkDeviceMemory)             HeightMapMemory;
-VkDestroyer(VkImageView)                HeightMapView;
-VkDestroyer(VkSampler)                  HeightSampler;
-
-VkDestroyer(VkRenderPass)               RenderPass;
-VkDestroyer(VkPipelineLayout)           PipelineLayout;
-VkDestroyer(VkPipeline)                 Pipeline;
-
-VkDestroyer(VkPipelineLayout)           PipelineLayout2;
-VkDestroyer(VkPipeline)                 Pipeline2;
-
-uint32_t                                CurrentPipeline;
-
-VkDestroyer(VkDescriptorSetLayout)  DescriptorSetLayout;
-VkDestroyer(VkDescriptorPool)       DescriptorPool;
-std::vector<VkDescriptorSet>        DescriptorSets;
-
-VkDestroyer(VkDescriptorSetLayout)  DescriptorSetLayout2;
-VkDestroyer(VkDescriptorPool)       DescriptorPool2;
-std::vector<VkDescriptorSet>        DescriptorSets2;
-
-VkDestroyer(VkBuffer)               StagingBuffer;
-VkDestroyer(VkDeviceMemory)         StagingBufferMemory;
-bool                                UpdateUniformBuffer;
-VkDestroyer(VkBuffer)               UniformBuffer;
-VkDestroyer(VkDeviceMemory)         UniformBufferMemory;
-
-std::vector<Mesh> Model;
-
-VkDestroyer(VkImage)                Image;
-VkDestroyer(VkDeviceMemory)         ImageMemory;
-VkDestroyer(VkImageView)            ImageView;
-VkDestroyer(VkSampler)              Sampler;
-
-VkDestroyer(VkImage)                Image2;
-VkDestroyer(VkDeviceMemory)         ImageMemory2;
-VkDestroyer(VkImageView)            ImageView2;
-VkDestroyer(VkSampler)              Sampler2;
-
-///////////////////////////////////////////////////////////////
-
-ChessBoard                          board;
-
-int                                 meshPos;
-
-///////////////////////////////////////////////////////////////
-
-OrbitingCamera                      Camera;
-
-float rotMax;
 
 public:
 
+  HWND* hWnd;
+
+
+virtual bool Initialize( WindowParameters window_parameters, HWND hWnd ) override {
+
+  if( !InitializeVulkan( window_parameters, nullptr, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, false ) ) {
+
+    return false;
+  }
+
+  float pos_x0 = -0.15f;
+  float pos_x1 = 0.15f;
+  float pos_y0 = -0.03f;
+  float pos_y1 = 0.03f;
+
+  
+  aas = new sdlTextEngine();
+
+  aas->Initialize("Hello you !!!", 200, 0x00FF0000, 0x00FFFFFF, pos_x0, pos_x1, pos_y0, pos_y1, 1000, 200, LogicalDevice.Object.Handle, PhysicalDevice, GraphicsQueue, FramesResources.front().CommandBuffer[0], Swapchain);
+
+  vess = new vessel();
+ 
+  vess->Initialize(LogicalDevice.Object.Handle, PhysicalDevice, GraphicsQueue, FramesResources.front().CommandBuffer[0], Swapchain);
+
+  return true;
+}
+
+
+
+virtual bool Draw() override {
+  auto prepare_frame = [&]( std::vector<VkCommandBuffer> command_buffer, uint32_t swapchain_image_index, VkFramebuffer framebuffer ) {
+    if( !BeginCommandBufferRecordingOperation( command_buffer[0], VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, nullptr ) ) {
+      return false;
+    }
+
+    if( PresentQueue.FamilyIndex != GraphicsQueue.FamilyIndex ) {
+      ImageTransition image_transition_before_drawing = {
+        Swapchain.Images[swapchain_image_index],  // VkImage              Image
+        VK_ACCESS_MEMORY_READ_BIT,                // VkAccessFlags        CurrentAccess
+        VK_ACCESS_MEMORY_READ_BIT,                // VkAccessFlags        NewAccess
+        VK_IMAGE_LAYOUT_UNDEFINED,                // VkImageLayout        CurrentLayout
+        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, // VkImageLayout        NewLayout
+        PresentQueue.FamilyIndex,                 // uint32_t             CurrentQueueFamily
+        GraphicsQueue.FamilyIndex,                // uint32_t             NewQueueFamily
+        VK_IMAGE_ASPECT_COLOR_BIT                 // VkImageAspectFlags   Aspect
+      };
+      SetImageMemoryBarrier( command_buffer[0], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, { image_transition_before_drawing } );
+    }
+
+    // Drawing
+    //BeginRenderPass( command_buffer[0], *RenderPass2, framebuffer, { { 0, 0 }, Swapchain.Size }, { { 0.1f, 0.2f, 0.3f, 1.0f } }, VK_SUBPASS_CONTENTS_INLINE );
+
+
+    VkViewport viewport = {
+      0.0f,                                       // float    x
+      0.0f,                                       // float    y
+      static_cast<float>(Swapchain.Size.width),   // float    width
+      static_cast<float>(Swapchain.Size.height),  // float    height
+      0.0f,                                       // float    minDepth
+      1.0f,                                       // float    maxDepth
+    };
+    SetViewportStateDynamically( command_buffer[0], 0, { viewport } );
+
+    VkRect2D scissor = {
+      {                                           // VkOffset2D     offset
+        0,                                          // int32_t        x
+        0                                           // int32_t        y
+      },
+      {                                           // VkExtent2D     extent
+        Swapchain.Size.width,                       // uint32_t       width
+        Swapchain.Size.height                       // uint32_t       height
+      }
+    };
+    SetScissorStateDynamically( command_buffer[0], 0, { scissor } );
+
     
+
+    ///////////////////////////////////////////////////////
+
+    if( true ) {
+      
+
+      BufferTransition pre_transfer_transition = {
+        *vess->getUniformBuffer(),               // VkBuffer         Buffer
+        VK_ACCESS_UNIFORM_READ_BIT,   // VkAccessFlags    CurrentAccess
+        VK_ACCESS_TRANSFER_WRITE_BIT, // VkAccessFlags    NewAccess
+        VK_QUEUE_FAMILY_IGNORED,      // uint32_t         CurrentQueueFamily
+        VK_QUEUE_FAMILY_IGNORED       // uint32_t         NewQueueFamily
+      };
+      SetBufferMemoryBarrier( command_buffer[0], VK_PIPELINE_STAGE_VERTEX_SHADER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, { pre_transfer_transition } );
+
+      std::vector<VkBufferCopy> regions = {
+        {
+          0,                        // VkDeviceSize     srcOffset
+          0,                        // VkDeviceSize     dstOffset
+          2 * 16 * sizeof( float )  // VkDeviceSize     size
+        }
+      };
+      CopyDataBetweenBuffers( command_buffer[0], vess->getStagingBuffer(), *vess->getUniformBuffer(), regions );
+
+      BufferTransition post_transfer_transition = {
+        *vess->getUniformBuffer(),               // VkBuffer         Buffer
+        VK_ACCESS_TRANSFER_WRITE_BIT, // VkAccessFlags    CurrentAccess
+        VK_ACCESS_UNIFORM_READ_BIT,   // VkAccessFlags    NewAccess
+        VK_QUEUE_FAMILY_IGNORED,      // uint32_t         CurrentQueueFamily
+        VK_QUEUE_FAMILY_IGNORED       // uint32_t         NewQueueFamily
+      };
+      SetBufferMemoryBarrier( command_buffer[0], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT, { post_transfer_transition } );
+    }
+
+    if( PresentQueue.FamilyIndex != GraphicsQueue.FamilyIndex ) {
+      ImageTransition image_transition_before_drawing = {
+        Swapchain.Images[swapchain_image_index],  // VkImage              Image
+        VK_ACCESS_MEMORY_READ_BIT,                // VkAccessFlags        CurrentAccess
+        VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,     // VkAccessFlags        NewAccess
+        VK_IMAGE_LAYOUT_UNDEFINED,                // VkImageLayout        CurrentLayout
+        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, // VkImageLayout        NewLayout
+        PresentQueue.FamilyIndex,                 // uint32_t             CurrentQueueFamily
+        GraphicsQueue.FamilyIndex,                // uint32_t             NewQueueFamily
+        VK_IMAGE_ASPECT_COLOR_BIT                 // VkImageAspectFlags   Aspect
+      };
+      SetImageMemoryBarrier( command_buffer[0], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, { image_transition_before_drawing } );
+    }
+
+    // Drawing
+    BeginRenderPass( command_buffer[0], vess->getRenderPass(), framebuffer, { { 0, 0 }, Swapchain.Size }, { { 0.6f, 0.2f, 0.3f, 1.0f }, { 1.0f, 0 } }, VK_SUBPASS_CONTENTS_INLINE );
+
+    
+
+    //BeginRenderPass( command_buffer[0], *RenderPass, framebuffer, { { 0, 0 }, Swapchain.Size }, { { 0.1f, 0.2f, 0.3f, 1.0f }, { 1.0f, 0 } }, VK_SUBPASS_CONTENTS_INLINE );
+
+    BindPipelineObject( command_buffer[0], VK_PIPELINE_BIND_POINT_GRAPHICS, vess->getGraphicsPipeline() );
+    
+    BindVertexBuffers( command_buffer[0], 0, { { vess->getVertexBuffer(), 0 } } );
+
+    BindDescriptorSets( command_buffer[0], VK_PIPELINE_BIND_POINT_GRAPHICS, vess->getPipelineLayout(), 0, vess->getDescriptorSet(), {} );
+
+
+    BindPipelineObject( command_buffer[0], VK_PIPELINE_BIND_POINT_GRAPHICS, vess->getGraphicsPipeline() );
+
+    for( size_t i = 0; i < vess->getMesh().Parts.size(); ++i ) {
+      DrawGeometry( command_buffer[0], vess->getMesh().Parts[i].VertexCount, 1, vess->getMesh().Parts[i].VertexOffset, 0 );
+    }
+
+
+    BindPipelineObject( command_buffer[0], VK_PIPELINE_BIND_POINT_GRAPHICS, aas->getGraphicsPipeline() );
+
+    BindDescriptorSets( command_buffer[0], VK_PIPELINE_BIND_POINT_GRAPHICS, aas->getPipelineLayout(), 0, aas->getDescriptorSet(), {} );
+
+    BindVertexBuffers( command_buffer[0], 0, { { aas->getVertexBuffer(), 0 } } );
+
+    DrawGeometry( command_buffer[0], 4, 1, 0, 0 );
+
+
+
+    
+
+    ///////////////////////////////////////////////////////
+    EndRenderPass( command_buffer[0] );
+
+    if( PresentQueue.FamilyIndex != GraphicsQueue.FamilyIndex ) {
+      ImageTransition image_transition_before_present = {
+        Swapchain.Images[swapchain_image_index],  // VkImage              Image
+        VK_ACCESS_MEMORY_READ_BIT,                // VkAccessFlags        CurrentAccess
+        VK_ACCESS_MEMORY_READ_BIT,                // VkAccessFlags        NewAccess
+        VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,          // VkImageLayout        CurrentLayout
+        VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,          // VkImageLayout        NewLayout
+        GraphicsQueue.FamilyIndex,                // uint32_t             CurrentQueueFamily
+        PresentQueue.FamilyIndex,                 // uint32_t             NewQueueFamily
+        VK_IMAGE_ASPECT_COLOR_BIT                 // VkImageAspectFlags   Aspect
+      };
+      SetImageMemoryBarrier( command_buffer[0], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, { image_transition_before_present } );
+    }
+
+    if( !EndCommandBufferRecordingOperation( command_buffer[0] ) ) {
+      return false;
+    }
+    return true;
+  };
+
+  return IncreasePerformanceThroughIncreasingTheNumberOfSeparatelyRenderedFrames( *LogicalDevice, GraphicsQueue.Handle, PresentQueue.Handle,
+    *Swapchain.Handle, Swapchain.Size, Swapchain.ImageViewsRaw, vess->getRenderPass(), {}, prepare_frame, FramesResources );
+}
 
 
 
@@ -83,875 +211,7 @@ public:
 
 private:
 
-    bool Initialize(WindowParameters window_parameters)
-    {
-
-      meshPos = -2;
-
-      Camera = OrbitingCamera( Vector3{ 0.0f, 0.0f, 0.0f }, 8.0f, 0.0f, 180.0f );
-
-      if( !InitializeVulkan( window_parameters ) ) {
-        return false;
-      }
-
-      // Combined image sampler
-      int width = 1;
-      int height = 1;
-      std::vector<unsigned char> image_data;
-      if( !LoadTextureDataFromFile( "Data/Textures/normal_map.png", 4, image_data, &width, &height ) ) {
-        return false;
-      }
-
-      InitVkDestroyer( LogicalDevice, Sampler );
-      InitVkDestroyer( LogicalDevice, Image );
-      InitVkDestroyer( LogicalDevice, ImageMemory );
-      InitVkDestroyer( LogicalDevice, ImageView );
-      if( !CreateCombinedImageSampler( PhysicalDevice, *LogicalDevice, VK_IMAGE_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM, { (uint32_t)width, (uint32_t)height, 1 },
-        1, 1, VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, false, VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_ASPECT_COLOR_BIT, VK_FILTER_LINEAR,
-        VK_FILTER_LINEAR, VK_SAMPLER_MIPMAP_MODE_NEAREST, VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_SAMPLER_ADDRESS_MODE_REPEAT,
-        VK_SAMPLER_ADDRESS_MODE_REPEAT, 0.0f, false, 1.0f, false, VK_COMPARE_OP_ALWAYS, 0.0f, 1.0f, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK,
-        false, *Sampler, *Image, *ImageMemory, *ImageView ) ) {
-        return false;
-      }
-
-      VkImageSubresourceLayers image_subresource_layer = {
-        VK_IMAGE_ASPECT_COLOR_BIT,    // VkImageAspectFlags     aspectMask
-        0,                            // uint32_t               mipLevel
-        0,                            // uint32_t               baseArrayLayer
-        1                             // uint32_t               layerCount
-      };
-
-      if( !UseStagingBufferToUpdateImageWithDeviceLocalMemoryBound( PhysicalDevice, *LogicalDevice, static_cast<VkDeviceSize>(image_data.size()),
-        &image_data[0], *Image, image_subresource_layer, { 0, 0, 0 }, { (uint32_t)width, (uint32_t)height, 1 }, VK_IMAGE_LAYOUT_UNDEFINED,
-        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, VK_ACCESS_SHADER_READ_BIT, VK_IMAGE_ASPECT_COLOR_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-        VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, GraphicsQueue.Handle, FramesResources.front().CommandBuffer.at(0), {} ) ) {
-        return false;
-      }
-
-      //************** */
-
-      // Combined image sampler
-      int width2 = 1;
-      int height2 = 1;
-      std::vector<unsigned char> image_data2;
-      if( !LoadTextureDataFromFile( "Data/Textures/white.png", 4, image_data2, &width2, &height2 ) ) {
-        return false;
-      }
-
-      InitVkDestroyer( LogicalDevice, Sampler2 );
-      InitVkDestroyer( LogicalDevice, Image2 );
-      InitVkDestroyer( LogicalDevice, ImageMemory2 );
-      InitVkDestroyer( LogicalDevice, ImageView2 );
-      if( !CreateCombinedImageSampler( PhysicalDevice, *LogicalDevice, VK_IMAGE_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM, { (uint32_t)width2, (uint32_t)height2, 1 },
-        1, 1, VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, false, VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_ASPECT_COLOR_BIT, VK_FILTER_LINEAR,
-        VK_FILTER_LINEAR, VK_SAMPLER_MIPMAP_MODE_NEAREST, VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_SAMPLER_ADDRESS_MODE_REPEAT,
-        VK_SAMPLER_ADDRESS_MODE_REPEAT, 0.0f, false, 1.0f, false, VK_COMPARE_OP_ALWAYS, 0.0f, 1.0f, VK_BORDER_COLOR_INT_OPAQUE_WHITE,
-        false, *Sampler2, *Image2, *ImageMemory2, *ImageView2 ) ) {
-        return false;
-      }
-
-      VkImageSubresourceLayers image_subresource_layer2 = {
-        VK_IMAGE_ASPECT_COLOR_BIT,    // VkImageAspectFlags     aspectMask
-        0,                            // uint32_t               mipLevel
-        0,                            // uint32_t               baseArrayLayer
-        1                             // uint32_t               layerCount
-      };
-
-      if( !UseStagingBufferToUpdateImageWithDeviceLocalMemoryBound( PhysicalDevice, *LogicalDevice, static_cast<VkDeviceSize>(image_data2.size()),
-        &image_data2[0], *Image2, image_subresource_layer2, { 0, 0, 0 }, { (uint32_t)width2, (uint32_t)height2, 1 }, VK_IMAGE_LAYOUT_UNDEFINED,
-        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, VK_ACCESS_SHADER_READ_BIT, VK_IMAGE_ASPECT_COLOR_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-        VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, GraphicsQueue.Handle, FramesResources.front().CommandBuffer.at(0), {} ) ) {
-        return false;
-      }
-
-
-      
-      Model.push_back(board.meshes.m_Pion);
-      Model.push_back(board.meshes.m_Tour);
-      Model.push_back(board.meshes.m_Roi);
-      Model.push_back(board.meshes.m_Cavalier);
-      Model.push_back(board.meshes.m_Fou);
-      Model.push_back(board.meshes.m_Reine);
-      Model.push_back(board.meshes.m_Case);
-
-      for(int i = 0; i < Model.size(); i++)
-      {
-        VkBuffer tmpB;
-        vectorVertexBuffer.push_back(tmpB);
-
-        //InitVkDestroyer( LogicalDevice, vectorVertexBuffer );
-        if( !CreateBuffer( *LogicalDevice, sizeof( float ) * Model.at(i).Data.size(),
-          VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, vectorVertexBuffer.at(i) ) ) {
-          return false;
-        }
-
-        
-        int a = 0;
-        VkDeviceMemory tmpB2;
-        vectorVertexBufferMemory.push_back(tmpB2);   
-
-        //InitVkDestroyer( LogicalDevice, *vectorVertexBufferMemory.at(i) );
-        if( !AllocateAndBindMemoryObjectToBuffer( PhysicalDevice, *LogicalDevice, vectorVertexBuffer.at(i), VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vectorVertexBufferMemory.at(i) ) ) {
-          return false;
-        }
-
-        if( !UseStagingBufferToUpdateBufferWithDeviceLocalMemoryBound( PhysicalDevice, *LogicalDevice, sizeof( Model.at(i).Data[0] ) * Model.at(i).Data.size(),
-          &Model.at(i).Data[0], vectorVertexBuffer.at(i), 0, 0, VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
-          GraphicsQueue.Handle, FramesResources.front().CommandBuffer.at(0), {} ) ) {
-          return false;
-        }
-      }
-
-      
-      // Staging buffer
-      InitVkDestroyer( LogicalDevice, StagingBuffer );
-      if( !CreateBuffer( *LogicalDevice, 64 * 2 * 16 * sizeof(float), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, *StagingBuffer ) ) {
-        return false;
-      }
-      InitVkDestroyer( LogicalDevice, StagingBufferMemory );
-      if( !AllocateAndBindMemoryObjectToBuffer( PhysicalDevice, *LogicalDevice, *StagingBuffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, *StagingBufferMemory ) ) {
-        return false;
-      }
-
-      // Uniform buffer
-      InitVkDestroyer( LogicalDevice, UniformBuffer );
-      InitVkDestroyer( LogicalDevice, UniformBufferMemory );
-      if( !CreateUniformBuffer( PhysicalDevice, *LogicalDevice, 64 * 2 * 16 * sizeof( float ), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-        *UniformBuffer, *UniformBufferMemory ) ) {
-        return false;
-      }
-
-      if( !UpdateStagingBuffer( true ) ) {
-        return false;
-      }
-
-      // Descriptor set with uniform buffer
-      std::vector<VkDescriptorSetLayoutBinding> descriptor_set_layout_binding = {
-        {
-          0,                                          
-          VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,        
-          2,                                          
-          VK_SHADER_STAGE_VERTEX_BIT,                 
-          nullptr
-        }
-        ,
-        {
-          1,                                          // uint32_t             binding
-          VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,  // VkDescriptorType     descriptorType
-          2,                                          // uint32_t             descriptorCount
-          VK_SHADER_STAGE_FRAGMENT_BIT,               // VkShaderStageFlags   stageFlags
-          nullptr                                     // const VkSampler    * pImmutableSamplers
-        }
-      };
-
-      InitVkDestroyer( LogicalDevice, DescriptorSetLayout );
-      if( !CreateDescriptorSetLayout( *LogicalDevice, { descriptor_set_layout_binding }, *DescriptorSetLayout ) ) {
-        return false;
-      }
-
-      std::vector<VkDescriptorPoolSize> descriptor_pool_sizes = {
-        {
-          VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,          // VkDescriptorType     type
-          2                                           // uint32_t             descriptorCount
-        },
-        {
-          VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,  // VkDescriptorType     type
-          2                                           // uint32_t             descriptorCount
-        }
-      };
-
-      InitVkDestroyer( LogicalDevice, DescriptorPool );
-      if( !CreateDescriptorPool( *LogicalDevice, true, 4, descriptor_pool_sizes, *DescriptorPool ) ) {
-        return false;
-      }
-
-      if( !AllocateDescriptorSets( *LogicalDevice, *DescriptorPool, { *DescriptorSetLayout, *DescriptorSetLayout }, DescriptorSets ) ) {
-        return false;
-      }
-
-      BufferDescriptorInfo buffer_descriptor_update = {
-        DescriptorSets[0],                          // VkDescriptorSet                      TargetDescriptorSet
-        0,                                          // uint32_t                             TargetDescriptorBinding
-        0,                                          // uint32_t                             TargetArrayElement
-        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,          // VkDescriptorType                     TargetDescriptorType
-        {                                           // std::vector<VkDescriptorBufferInfo>  BufferInfos
-          {
-            *UniformBuffer,                           // VkBuffer                             buffer
-            0*2*16*sizeof(float),                                        // VkDeviceSize                         offset
-            2*16*sizeof(float)                             // VkDeviceSize                         range
-          }
-        }
-      };
-
-      ImageDescriptorInfo image_descriptor_update = {
-        DescriptorSets[0],                          // VkDescriptorSet                      TargetDescriptorSet
-        1,                                          // uint32_t                             TargetDescriptorBinding
-        0,                                          // uint32_t                             TargetArrayElement
-        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,  // VkDescriptorType                     TargetDescriptorType
-        {                                           // std::vector<VkDescriptorImageInfo>   ImageInfos
-          {
-            *Sampler,                                 // VkSampler                            sampler
-            *ImageView,                               // VkImageView                          imageView
-            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL  // VkImageLayout                        imageLayout
-          }
-        }
-      };
-
-      BufferDescriptorInfo buffer_descriptor_update2 = {
-        DescriptorSets[1],                          // VkDescriptorSet                      TargetDescriptorSet
-        0,                                          // uint32_t                             TargetDescriptorBinding
-        0,                                          // uint32_t                             TargetArrayElement
-        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,          // VkDescriptorType                     TargetDescriptorType
-        {                                           // std::vector<VkDescriptorBufferInfo>  BufferInfos
-          {
-            *UniformBuffer,                           // VkBuffer                             buffer
-            0*2*16*sizeof(float),                                        // VkDeviceSize                         offset
-            2*16*sizeof(float)                             // VkDeviceSize                         range
-          }
-        }
-      };
-
-      ImageDescriptorInfo image_descriptor_update2 = {
-        DescriptorSets[1],                          // VkDescriptorSet                      TargetDescriptorSet
-        1,                                          // uint32_t                             TargetDescriptorBinding
-        0,                                          // uint32_t                             TargetArrayElement
-        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,  // VkDescriptorType                     TargetDescriptorType
-        {                                           // std::vector<VkDescriptorImageInfo>   ImageInfos
-          {
-            *Sampler,                                 // VkSampler                            sampler
-            *ImageView2,                               // VkImageView                          imageView
-            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL  // VkImageLayout                        imageLayout
-          }
-        }
-      };
-
-      UpdateDescriptorSets( *LogicalDevice, { image_descriptor_update, image_descriptor_update2 }, { buffer_descriptor_update, buffer_descriptor_update2 }, {}, {} );
-
-      // Render pass
-      std::vector<VkAttachmentDescription> attachment_descriptions = {
-        {
-          0,                                                // VkAttachmentDescriptionFlags     flags
-          Swapchain.Format,                                 // VkFormat                         format
-          VK_SAMPLE_COUNT_1_BIT,                            // VkSampleCountFlagBits            samples
-          VK_ATTACHMENT_LOAD_OP_CLEAR,                      // VkAttachmentLoadOp               loadOp
-          VK_ATTACHMENT_STORE_OP_STORE,                     // VkAttachmentStoreOp              storeOp
-          VK_ATTACHMENT_LOAD_OP_DONT_CARE,                  // VkAttachmentLoadOp               stencilLoadOp
-          VK_ATTACHMENT_STORE_OP_DONT_CARE,                 // VkAttachmentStoreOp              stencilStoreOp
-          VK_IMAGE_LAYOUT_UNDEFINED,                        // VkImageLayout                    initialLayout
-          VK_IMAGE_LAYOUT_PRESENT_SRC_KHR                   // VkImageLayout                    finalLayout
-        },
-        {
-          0,                                                // VkAttachmentDescriptionFlags     flags
-          DepthFormat,                                      // VkFormat                         format
-          VK_SAMPLE_COUNT_1_BIT,                            // VkSampleCountFlagBits            samples
-          VK_ATTACHMENT_LOAD_OP_CLEAR,                      // VkAttachmentLoadOp               loadOp
-          VK_ATTACHMENT_STORE_OP_DONT_CARE,                 // VkAttachmentStoreOp              storeOp
-          VK_ATTACHMENT_LOAD_OP_DONT_CARE,                  // VkAttachmentLoadOp               stencilLoadOp
-          VK_ATTACHMENT_STORE_OP_DONT_CARE,                 // VkAttachmentStoreOp              stencilStoreOp
-          VK_IMAGE_LAYOUT_UNDEFINED,                        // VkImageLayout                    initialLayout
-          VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL  // VkImageLayout                    finalLayout
-        }
-      };
-
-      VkAttachmentReference depth_attachment = {
-        1,                                                // uint32_t                             attachment
-        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL  // VkImageLayout                        layout
-      };
-
-      std::vector<SubpassParameters> subpass_parameters = {
-        {
-          VK_PIPELINE_BIND_POINT_GRAPHICS,              // VkPipelineBindPoint                  PipelineType
-          {},                                           // std::vector<VkAttachmentReference>   InputAttachments
-          {                                             // std::vector<VkAttachmentReference>   ColorAttachments
-            {
-              0,                                          // uint32_t                             attachment
-              VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,   // VkImageLayout                        layout
-            }
-          },
-          {},                                           // std::vector<VkAttachmentReference>   ResolveAttachments
-          &depth_attachment,                            // VkAttachmentReference const        * DepthStencilAttachment
-          {}                                            // std::vector<uint32_t>                PreserveAttachments
-        }
-      };
-
-      std::vector<VkSubpassDependency> subpass_dependencies = {
-        {
-          VK_SUBPASS_EXTERNAL,                            // uint32_t                   srcSubpass
-          0,                                              // uint32_t                   dstSubpass
-          VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,              // VkPipelineStageFlags       srcStageMask
-          VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,  // VkPipelineStageFlags       dstStageMask
-          VK_ACCESS_MEMORY_READ_BIT,                      // VkAccessFlags              srcAccessMask
-          VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,           // VkAccessFlags              dstAccessMask
-          VK_DEPENDENCY_BY_REGION_BIT                     // VkDependencyFlags          dependencyFlags
-        },
-        {
-          0,                                              // uint32_t                   srcSubpass
-          VK_SUBPASS_EXTERNAL,                            // uint32_t                   dstSubpass
-          VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,  // VkPipelineStageFlags       srcStageMask
-          VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,              // VkPipelineStageFlags       dstStageMask
-          VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,           // VkAccessFlags              srcAccessMask
-          VK_ACCESS_MEMORY_READ_BIT,                      // VkAccessFlags              dstAccessMask
-          VK_DEPENDENCY_BY_REGION_BIT                     // VkDependencyFlags          dependencyFlags
-        }
-      };
-
-      InitVkDestroyer( LogicalDevice, RenderPass );
-      if( !CreateRenderPass( *LogicalDevice, attachment_descriptions, subpass_parameters, subpass_dependencies, *RenderPass ) ) {
-        return false;
-      }
-
-      // Graphics pipeline
-
-      std::vector<VkPushConstantRange> push_constant_ranges = {
-        {
-          VK_SHADER_STAGE_FRAGMENT_BIT,   // VkShaderStageFlags     stageFlags
-          0,                              // uint32_t               offset
-          sizeof( float ) * 4             // uint32_t               size
-        }
-      };
-
-      InitVkDestroyer( LogicalDevice, PipelineLayout );
-      if( !CreatePipelineLayout( *LogicalDevice, { *DescriptorSetLayout }, {}, *PipelineLayout ) ) {
-        return false;
-      }
-
-      std::vector<unsigned char> vertex_shader_spirv;
-      if( !GetBinaryFileContents( "Data/Shaders/11 Lighting/01 Rendering a geometry with vertex diffuse lighting/shader.vert.spv", vertex_shader_spirv ) ) {
-        return false;
-      }
-
-      VkDestroyer(VkShaderModule) vertex_shader_module;
-      InitVkDestroyer( LogicalDevice, vertex_shader_module );
-      if( !CreateShaderModule( *LogicalDevice, vertex_shader_spirv, *vertex_shader_module ) ) {
-        return false;
-      }
-
-      std::vector<unsigned char> fragment_shader_spirv;
-      if( !GetBinaryFileContents( "Data/Shaders/11 Lighting/01 Rendering a geometry with vertex diffuse lighting/shader.frag.spv", fragment_shader_spirv ) ) {
-        return false;
-      }
-      VkDestroyer(VkShaderModule) fragment_shader_module;
-      InitVkDestroyer( LogicalDevice, fragment_shader_module );
-      if( !CreateShaderModule( *LogicalDevice, fragment_shader_spirv, *fragment_shader_module ) ) {
-        return false;
-      }
-
-      std::vector<ShaderStageParameters> shader_stage_params = {
-        {
-          VK_SHADER_STAGE_VERTEX_BIT,       // VkShaderStageFlagBits        ShaderStage
-          *vertex_shader_module,            // VkShaderModule               ShaderModule
-          "main",                           // char const                 * EntryPointName
-          nullptr                           // VkSpecializationInfo const * SpecializationInfo
-        },
-        {
-          VK_SHADER_STAGE_FRAGMENT_BIT,     // VkShaderStageFlagBits        ShaderStage
-          *fragment_shader_module,          // VkShaderModule               ShaderModule
-          "main",                           // char const                 * EntryPointName
-          nullptr                           // VkSpecializationInfo const * SpecializationInfo
-        }
-      };
-
-      std::vector<VkPipelineShaderStageCreateInfo> shader_stage_create_infos;
-      SpecifyPipelineShaderStages( shader_stage_params, shader_stage_create_infos );
-
-      std::vector<VkVertexInputBindingDescription> vertex_input_binding_descriptions = {
-        {
-          0,                            // uint32_t                     binding
-          board.meshes.stride,                // uint32_t                     stride
-          VK_VERTEX_INPUT_RATE_VERTEX   // VkVertexInputRate            inputRate
-        }
-      };
-  
-      std::vector<VkVertexInputAttributeDescription> vertex_attribute_descriptions = {
-        { // Position
-          0,                                                                        // uint32_t   location
-          0,                                                                        // uint32_t   binding
-          VK_FORMAT_R32G32B32_SFLOAT,                                               // VkFormat   format
-          0                                                                         // uint32_t   offset
-        },
-        { // Normal vector
-          1,                                                                        // uint32_t   location
-          0,                                                                        // uint32_t   binding
-          VK_FORMAT_R32G32B32_SFLOAT,                                               // VkFormat   format
-          3 * sizeof( float )                                                       // uint32_t   offset
-        },
-        { // Texcoords
-          2,                                                                        // uint32_t   location
-          0,                                                                        // uint32_t   binding
-          VK_FORMAT_R32G32_SFLOAT,                                                  // VkFormat   format
-          6 * sizeof( float )                                                       // uint32_t   offset
-        },
-        { // Tangent vector
-          3,                                                                        // uint32_t   location
-          0,                                                                        // uint32_t   binding
-          VK_FORMAT_R32G32B32_SFLOAT,                                               // VkFormat   format
-          8 * sizeof( float )                                                       // uint32_t   offset
-        },
-        { // bitangent vector
-          4,                                                                        // uint32_t   location
-          0,                                                                        // uint32_t   binding
-          VK_FORMAT_R32G32B32_SFLOAT,                                               // VkFormat   format
-          11 * sizeof( float )                                                      // uint32_t   offset
-        }
-      };
-
-      VkPipelineVertexInputStateCreateInfo vertex_input_state_create_info;
-      SpecifyPipelineVertexInputState( vertex_input_binding_descriptions, vertex_attribute_descriptions, vertex_input_state_create_info );
-
-      VkPipelineInputAssemblyStateCreateInfo input_assembly_state_create_info;
-      SpecifyPipelineInputAssemblyState( VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, false, input_assembly_state_create_info );
-
-      ViewportInfo viewport_infos = {
-        {                     // std::vector<VkViewport>   Viewports
-          {
-            0.0f,               // float          x
-            0.0f,               // float          y
-            500.0f,             // float          width
-            500.0f,             // float          height
-            0.0f,               // float          minDepth
-            1.0f                // float          maxDepth
-          }
-        },
-        {                     // std::vector<VkRect2D>     Scissors
-          {
-            {                   // VkOffset2D     offset
-              0,                  // int32_t        x
-              0                   // int32_t        y
-            },
-            {                   // VkExtent2D     extent
-              500,                // uint32_t       width
-              500                 // uint32_t       height
-            }
-          }
-        }
-      };
-
-      VkPipelineViewportStateCreateInfo viewport_state_create_info;
-      SpecifyPipelineViewportAndScissorTestState( viewport_infos, viewport_state_create_info );
-
-      VkPipelineRasterizationStateCreateInfo rasterization_state_create_info;
-      SpecifyPipelineRasterizationState( false, false, VK_POLYGON_MODE_FILL, VK_CULL_MODE_BACK_BIT, VK_FRONT_FACE_COUNTER_CLOCKWISE, false, 0.0f, 0.0f, 0.0f, 1.0f, rasterization_state_create_info );
-
-      VkPipelineMultisampleStateCreateInfo multisample_state_create_info;
-      SpecifyPipelineMultisampleState( VK_SAMPLE_COUNT_1_BIT, false, 0.0f, nullptr, false, false, multisample_state_create_info );
-
-      VkPipelineDepthStencilStateCreateInfo depth_stencil_state_create_info;
-      SpecifyPipelineDepthAndStencilState( true, true, VK_COMPARE_OP_LESS_OR_EQUAL, false, 0.0f, 1.0f, false, {}, {}, depth_stencil_state_create_info );
-
-      std::vector<VkPipelineColorBlendAttachmentState> attachment_blend_states = {
-        {
-          false,                          // VkBool32                 blendEnable
-          VK_BLEND_FACTOR_ONE,            // VkBlendFactor            srcColorBlendFactor
-          VK_BLEND_FACTOR_ONE,            // VkBlendFactor            dstColorBlendFactor
-          VK_BLEND_OP_ADD,                // VkBlendOp                colorBlendOp
-          VK_BLEND_FACTOR_ONE,            // VkBlendFactor            srcAlphaBlendFactor
-          VK_BLEND_FACTOR_ONE,            // VkBlendFactor            dstAlphaBlendFactor
-          VK_BLEND_OP_ADD,                // VkBlendOp                alphaBlendOp
-          VK_COLOR_COMPONENT_R_BIT |      // VkColorComponentFlags    colorWriteMask
-          VK_COLOR_COMPONENT_G_BIT |
-          VK_COLOR_COMPONENT_B_BIT |
-          VK_COLOR_COMPONENT_A_BIT
-        }
-      };
-      VkPipelineColorBlendStateCreateInfo blend_state_create_info;
-      SpecifyPipelineBlendState( false, VK_LOGIC_OP_COPY, attachment_blend_states, { 1.0f, 1.0f, 1.0f, 1.0f }, blend_state_create_info );
-
-      std::vector<VkDynamicState> dynamic_states = {
-        VK_DYNAMIC_STATE_VIEWPORT,
-        VK_DYNAMIC_STATE_SCISSOR
-      };
-      VkPipelineDynamicStateCreateInfo dynamic_state_create_info;
-      SpecifyPipelineDynamicStates( dynamic_states, dynamic_state_create_info );
-
-      VkGraphicsPipelineCreateInfo pipeline_create_info;
-      SpecifyGraphicsPipelineCreationParameters( 0, shader_stage_create_infos, vertex_input_state_create_info, input_assembly_state_create_info,
-        nullptr, &viewport_state_create_info, rasterization_state_create_info, &multisample_state_create_info, &depth_stencil_state_create_info, &blend_state_create_info,
-        &dynamic_state_create_info, *PipelineLayout, *RenderPass, 0, VK_NULL_HANDLE, -1, pipeline_create_info );
-
-      std::vector<VkPipeline> pipeline;
-      if( !CreateGraphicsPipelines( *LogicalDevice, { pipeline_create_info }, VK_NULL_HANDLE, pipeline ) ) {
-        return false;
-      }
-      InitVkDestroyer( LogicalDevice, Pipeline );
-      *Pipeline = pipeline[0];
-
-      return true;
-    }
-
-    virtual bool Draw() override {
-      
-      auto prepare_frame = [&]( std::vector<VkCommandBuffer> command_buffer, uint32_t swapchain_image_index, VkFramebuffer framebuffer ) {
-        
-
-
-        
-           int i = 0;
-          
-          if( !BeginCommandBufferRecordingOperation( command_buffer[i], VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, nullptr ) ) {
-          return false;
-          }
-        
-        if( UpdateUniformBuffer ) {
-
-          
-            UpdateUniformBuffer = false;
-
-            BufferTransition pre_transfer_transition = {
-              *UniformBuffer,               // VkBuffer         Buffer
-              VK_ACCESS_UNIFORM_READ_BIT,   // VkAccessFlags    CurrentAccess
-              VK_ACCESS_TRANSFER_WRITE_BIT, // VkAccessFlags    NewAccess
-              VK_QUEUE_FAMILY_IGNORED,      // uint32_t         CurrentQueueFamily
-              VK_QUEUE_FAMILY_IGNORED       // uint32_t         NewQueueFamily
-            };
-            SetBufferMemoryBarrier( command_buffer[i], VK_PIPELINE_STAGE_VERTEX_SHADER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, { pre_transfer_transition } );
-
-            std::vector<VkBufferCopy> regions = {
-              {
-                0,                        // VkDeviceSize     srcOffset
-                0,                        // VkDeviceSize     dstOffset
-                64 * 2 * 16 * sizeof( float )  // VkDeviceSize     size
-              }
-            };
-            CopyDataBetweenBuffers( command_buffer[i], *StagingBuffer, *UniformBuffer, regions );
-
-            BufferTransition post_transfer_transition = {
-              *UniformBuffer,               // VkBuffer         Buffer
-              VK_ACCESS_TRANSFER_WRITE_BIT, // VkAccessFlags    CurrentAccess
-              VK_ACCESS_UNIFORM_READ_BIT,   // VkAccessFlags    NewAccess
-              VK_QUEUE_FAMILY_IGNORED,      // uint32_t         CurrentQueueFamily
-              VK_QUEUE_FAMILY_IGNORED       // uint32_t         NewQueueFamily
-            };
-            SetBufferMemoryBarrier( command_buffer[i], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT, { post_transfer_transition } );
-          
-        }
-
-        if( PresentQueue.FamilyIndex != GraphicsQueue.FamilyIndex ) {
-          ImageTransition image_transition_before_drawing = {
-            Swapchain.Images[swapchain_image_index],  // VkImage              Image
-            VK_ACCESS_MEMORY_READ_BIT,                // VkAccessFlags        CurrentAccess
-            VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,     // VkAccessFlags        NewAccess
-            VK_IMAGE_LAYOUT_UNDEFINED,                // VkImageLayout        CurrentLayout
-            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, // VkImageLayout        NewLayout
-            PresentQueue.FamilyIndex,                 // uint32_t             CurrentQueueFamily
-            GraphicsQueue.FamilyIndex,                // uint32_t             NewQueueFamily
-            VK_IMAGE_ASPECT_COLOR_BIT                 // VkImageAspectFlags   Aspect
-          };
-          SetImageMemoryBarrier( command_buffer[i], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, { image_transition_before_drawing } );
-        }
-
-        // Drawing
-        BeginRenderPass( command_buffer[i], *RenderPass, framebuffer, { { 0, 0 }, Swapchain.Size }, { { 0.1f, 0.2f, 0.3f, 1.0f }, { 1.0f, 0 } }, VK_SUBPASS_CONTENTS_INLINE );
-
-        VkViewport viewport = {
-          0.0f,                                       // float    x
-          0.0f,                                       // float    y
-          static_cast<float>(Swapchain.Size.width),   // float    width
-          static_cast<float>(Swapchain.Size.height),  // float    height
-          0.0f,                                       // float    minDepth
-          1.0f,                                       // float    maxDepth
-        };
-        SetViewportStateDynamically( command_buffer[i], 0, { viewport } );
-
-        VkRect2D scissor = {
-          {                                           // VkOffset2D     offset
-            0,                                          // int32_t        x
-            0                                           // int32_t        y
-          },
-          {                                           // VkExtent2D     extent
-            Swapchain.Size.width,                       // uint32_t       width
-            Swapchain.Size.height                       // uint32_t       height
-          }
-        };
-        
-        SetScissorStateDynamically( command_buffer[i], 0, { scissor } );
-
-        for(int z = 0; z < 8; z++)
-        {
-
-          for(int m = 0; m < 8; m++)
-          {
-
-            ChessPart* part = board.getCaseBoard(z, m);
-
-            if(part != nullptr)
-            {
-
-              BindVertexBuffers( command_buffer[i], 0, { { vectorVertexBuffer.at(part->getBufferDraw()), 0 } } );
-              
-              uint32_t aaa = (8 * m + z) * 2 * 16 * sizeof(float);
-              
-              
-
-              if(part->colorPart == 0)
-              {BindDescriptorSets( command_buffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, *PipelineLayout, 0, {DescriptorSets[0]}, { aaa, 0 } );
-                std::array<float, 4> light_position = { 0.0f, 10.0f, 0.0f, 0.0f };
-              ProvideDataToShadersThroughPushConstants( command_buffer[0], *PipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof( float ) * 4, &light_position[0] );
-              } 
-              else
-              { BindDescriptorSets( command_buffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, *PipelineLayout, 0, {DescriptorSets[1]}, { aaa, 0 } );
-              std::array<float, 4> light_position = { 5.0f, 5.0f, -1.0f, 0.0f };
-              ProvideDataToShadersThroughPushConstants( command_buffer[0], *PipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof( float ) * 4, &light_position[0] );
-            }
-              BindPipelineObject( command_buffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, *Pipeline );
-
-             
-
-              for( size_t j = 0; j < Model.at(part->getBufferDraw()).Parts.size(); ++j ) {
-
-                DrawGeometry( command_buffer[i], Model.at(part->getBufferDraw()).Parts[j].VertexCount, 1, Model.at(part->getBufferDraw()).Parts[j].VertexOffset, 0 );
-                
-              }
-            }
-            
-            if((z+m)%2 == 0)
-            {
-              BindVertexBuffers( command_buffer[i], 0, { { vectorVertexBuffer.at(6), 0 } } );
-              
-              uint32_t aaa = (8 * m + z) * 2 * 16 * sizeof(float);             
-
-              BindDescriptorSets( command_buffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, *PipelineLayout, 0, {DescriptorSets[0]}, { aaa, 0 } );
-              
-              std::array<float, 4> light_position = { 0.0f, 10.0f, 0.0f, 0.0f };
-              ProvideDataToShadersThroughPushConstants( command_buffer[0], *PipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof( float ) * 4, &light_position[0] );
-              
-              BindPipelineObject( command_buffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, *Pipeline );
-
-              DrawGeometry( command_buffer[i], Model.at(6).Parts[0].VertexCount, 1, Model.at(6).Parts[0].VertexOffset, 0 );
-            } 
-            else
-            { 
-              BindVertexBuffers( command_buffer[i], 0, { { vectorVertexBuffer.at(6), 0 } } );
-              
-              uint32_t aaa = (8 * m + z) * 2 * 16 * sizeof(float);             
-
-              BindDescriptorSets( command_buffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, *PipelineLayout, 0, {DescriptorSets[1]}, { aaa, 0 } );
-              
-              std::array<float, 4> light_position = { 0.0f, 10.0f, 0.0f, 0.0f };
-              ProvideDataToShadersThroughPushConstants( command_buffer[0], *PipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof( float ) * 4, &light_position[0] );
-              
-              BindPipelineObject( command_buffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, *Pipeline );
-
-              DrawGeometry( command_buffer[i], Model.at(6).Parts[0].VertexCount, 1, Model.at(6).Parts[0].VertexOffset, 0 );
-            }
-          }
-        }
-        
-
-        EndRenderPass( command_buffer[i] );
-
-        if( PresentQueue.FamilyIndex != GraphicsQueue.FamilyIndex ) {
-          ImageTransition image_transition_before_present = {
-            Swapchain.Images[swapchain_image_index],  // VkImage              Image
-            VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,     // VkAccessFlags        CurrentAccess
-            VK_ACCESS_MEMORY_READ_BIT,                // VkAccessFlags        NewAccess
-            VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,          // VkImageLayout        CurrentLayout
-            VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,          // VkImageLayout        NewLayout
-            GraphicsQueue.FamilyIndex,                // uint32_t             CurrentQueueFamily
-            PresentQueue.FamilyIndex,                 // uint32_t             NewQueueFamily
-            VK_IMAGE_ASPECT_COLOR_BIT                 // VkImageAspectFlags   Aspect
-          };
-          SetImageMemoryBarrier( command_buffer[i], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, { image_transition_before_present } );
-        }
-
-        if( !EndCommandBufferRecordingOperation( command_buffer[i] ) ) {
-          return false;
-        }
-      
-        return true;
-      };
-
-      return IncreasePerformanceThroughIncreasingTheNumberOfSeparatelyRenderedFrames( *LogicalDevice, GraphicsQueue.Handle, PresentQueue.Handle,
-        *Swapchain.Handle, Swapchain.Size, Swapchain.ImageViewsRaw, *RenderPass, {}, prepare_frame, FramesResources );
-    }
-
-    void OnMouseEvent()
-    {
-        UpdateStagingBuffer(false);
-    }
-
-    bool UpdateStagingBuffer( bool force ) {
     
-      if(meshPos != -1 && meshPos != -2)
-      {
-        if(MouseState.Buttons[1].WasClicked)
-        {
-          
-          MouseState.Buttons[1].WasClicked = false;
-          int touched = -1;
-          
-          float x = (2.0f * MouseState.Position.X) / Swapchain.Size.width - 1.0f;
-          float y = 1.0f - (2.0f * MouseState.Position.Y) / Swapchain.Size.height;
-          float z = -8.0f;
-          
-          Matrix4x4 matW = Camera.GetMatrix();
-          
-          Matrix4x4 perspective_matrix = PreparePerspectiveProjectionMatrix( static_cast<float>(Swapchain.Size.width) / static_cast<float>(Swapchain.Size.height), 90.0f, 0.1f, 100.0f );
-
-          for(int i = 0; i < 64; i++)
-          {
-            
-              float* data = Model.at(6).Data.data();
-              
-              // Convert screen coordinates to normalized device coordinates (NDC)
-              float ndcX = x;//(2.0f * screenX) / screenWidth - 1.0f;
-              float ndcY = y;//1.0f - (2.0f * screenY) / screenHeight; //Invert Y
-
-              // Convert NDC to clip space
-              glm::vec4 clipSpaceRay = glm::vec4(ndcX, -ndcY, -1.0, 1.0);
-
-              // Convert clip space to eye space
-              glm::mat4 inverseProjectionMatrix = glm::inverse(glm::make_mat4(perspective_matrix.data()));
-              glm::vec4 eyeSpaceRay = inverseProjectionMatrix * clipSpaceRay;
-              eyeSpaceRay.z = -1.0f;
-              eyeSpaceRay.w = 0.0f;
-
-              // Convert eye space to world space
-              glm::mat4 inverseViewMatrix = glm::inverse(glm::make_mat4(matW.data()));
-              glm::vec4 worldSpaceRay = inverseViewMatrix * eyeSpaceRay;
-
-              // Normalize the direction vector
-              glm::vec3 worldDir = glm::normalize(glm::vec3(worldSpaceRay));
-              
-              Matrix4x4 ttt = PrepareTranslationMatrix( i % 8 * 1.5f-5.5f, 0.0f, i / 8 * 1.5f-5.5f );
-
-              std::optional<Vector3> rep = ray_intersects_triangle(Camera.GetPosition(), Vector3{worldDir[0], worldDir[1], worldDir[2]}, data, Model.at(6).Data.size(), glm::make_mat4(ttt.data()));
-              
-              if(rep != std::nullopt)
-              {
-                
-                touched = i;
-                break;
-              }
-            
-          }
-
-          if(touched != -1)
-          {
-            
-            std::vector<int> occupe;
-
-            for(int i = 0; i<64; i++)
-            {
-              if(board.getCaseBoard(board.getPosX(i), board.getPosY(i)) != nullptr) occupe.push_back(i);
-            }
-
-            std::vector<int> possibilites = board.getCaseBoard(board.getPosX(meshPos), board.getPosY(meshPos))->deplacementPossible(meshPos, occupe, board.getCaseBoard(board.getPosX(meshPos), board.getPosY(meshPos))->colorPart, board.getCaseBoard(board.getPosX(meshPos), board.getPosY(meshPos))->getBufferDraw() ==  0);
-            
-            for(int i = 0; i < possibilites.size(); i++)
-            {
-              if(possibilites.at(i) == touched)
-              {
-            
-                board.movePart(meshPos, touched);                
-              }
-            }
-            
-            meshPos = -1;            
-          }        
-        }
-      }
-      else
-      {
-        
-        if(MouseState.Buttons[0].WasClicked)
-        {
-
-          MouseState.Buttons[0].WasClicked = false;
-
-          int touched = -1;
-          
-          float x = (2.0f * MouseState.Position.X) / Swapchain.Size.width - 1.0f;
-          float y = 1.0f - (2.0f * MouseState.Position.Y) / Swapchain.Size.height;
-          float z = -8.0f;
-          
-          Matrix4x4 matW = Camera.GetMatrix();
-          
-          Matrix4x4 perspective_matrix = PreparePerspectiveProjectionMatrix( static_cast<float>(Swapchain.Size.width) / static_cast<float>(Swapchain.Size.height), 90.0f, 0.1f, 100.0f );
-
-          for(int i = 0; i < 64; i++)
-          {
-            if(board.getCaseBoard(board.getPosX(i), board.getPosY(i)) != nullptr)
-            {
-              float* data = Model.at(board.getCaseBoard(board.getPosX(i), board.getPosY(i))->getBufferDraw()).Data.data();
-              
-              // Convert screen coordinates to normalized device coordinates (NDC)
-              float ndcX = x;//(2.0f * screenX) / screenWidth - 1.0f;
-              float ndcY = y;//1.0f - (2.0f * screenY) / screenHeight; //Invert Y
-
-              // Convert NDC to clip space
-              glm::vec4 clipSpaceRay = glm::vec4(ndcX, -ndcY, -1.0, 1.0);
-
-              // Convert clip space to eye space
-              glm::mat4 inverseProjectionMatrix = glm::inverse(glm::make_mat4(perspective_matrix.data()));
-              glm::vec4 eyeSpaceRay = inverseProjectionMatrix * clipSpaceRay;
-              eyeSpaceRay.z = -1.0f;
-              eyeSpaceRay.w = 0.0f;
-
-              // Convert eye space to world space
-              glm::mat4 inverseViewMatrix = glm::inverse(glm::make_mat4(matW.data()));
-              glm::vec4 worldSpaceRay = inverseViewMatrix * eyeSpaceRay;
-
-              // Normalize the direction vector
-              glm::vec3 worldDir = glm::normalize(glm::vec3(worldSpaceRay));
-              
-              Matrix4x4 ttt = PrepareTranslationMatrix( i % 8 * 1.5f-5.5f, 0.0f, i / 8 * 1.5f-5.5f );
-
-              std::optional<Vector3> rep = ray_intersects_triangle(Camera.GetPosition(), Vector3{worldDir[0], worldDir[1], worldDir[2]}, data, Model.at(board.getCaseBoard(board.getPosX(i), board.getPosY(i))->getBufferDraw()).Data.size(), glm::make_mat4(ttt.data()));
-              
-              if(rep != std::nullopt)
-              {
-                
-                touched = i;
-                break;
-              }
-            }
-          }
-
-          if(touched != -1)
-          {
-            meshPos = touched;
-            force = true;
-          }
-        }
-
-        if(force)
-        {
-
-          UpdateUniformBuffer = true;
-
-          float selectedTranslation = 0.0f;
-
-          if(meshPos != -1) selectedTranslation = 1.0f;
-        
-          for(int i = 0; i < 64; i++)
-          {
-            Matrix4x4 rotation_matrix =  PrepareRotationMatrix( 0, { 1.0f, 0.0f, 0.0f } ) * PrepareRotationMatrix( 0, { 0.0f, -1.0f, 0.0f } );
-            Matrix4x4 translation_matrix;
-            if(meshPos == i) translation_matrix = PrepareTranslationMatrix( i % 8 * 1.5f-5.5f, selectedTranslation, i / 8 * 1.5f-5.5f );
-            else translation_matrix = PrepareTranslationMatrix( i % 8 * 1.5f-5.5f, 0.0f, i / 8 * 1.5f-5.5f );
-            Matrix4x4 model_view_matrix = translation_matrix * rotation_matrix;
-
-            Matrix4x4 view = Camera.GetMatrix();
-
-            model_view_matrix = view * model_view_matrix;
-
-            if( !MapUpdateAndUnmapHostVisibleMemory( *LogicalDevice, *StagingBufferMemory, (2*i+0) * sizeof( model_view_matrix[0] ) * model_view_matrix.size(), sizeof( model_view_matrix[0] ) * model_view_matrix.size(), &model_view_matrix[0], true, nullptr ) ) {
-              return false;
-            }
-
-            Matrix4x4 perspective_matrix = PreparePerspectiveProjectionMatrix( static_cast<float>(Swapchain.Size.width) / static_cast<float>(Swapchain.Size.height),
-              90.0f, 0.1f, 100.0f );
-
-            if( !MapUpdateAndUnmapHostVisibleMemory( *LogicalDevice, *StagingBufferMemory, (2*i+1) * sizeof( model_view_matrix[0] ) * model_view_matrix.size(),
-              sizeof( perspective_matrix[0] ) * perspective_matrix.size(), &perspective_matrix[0], true, nullptr ) ) {
-              return false;
-            }
-          } 
-        }
-      }
-
-      return true;
-    }
 
     bool Resize()
     {
@@ -959,11 +219,6 @@ private:
             return false;
         }
 
-        if (IsReady()) {
-            if (!UpdateStagingBuffer(true)) {
-                return false;
-            }
-        }
         return true;
     }
 

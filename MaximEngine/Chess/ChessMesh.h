@@ -14,7 +14,7 @@ class ChessMesh{
             Load3DModelFromObjFile( "Data/Models/chess_fou.obj", true, true, true, true, m_Fou );
             Load3DModelFromObjFile( "Data/Models/chess_King.obj", true, true, true, true, m_Roi );
             Load3DModelFromObjFile( "Data/Models/chess_queen.obj", true, true, true, true, m_Reine );
-            Load3DModelFromObjFile( "Data/Models/chess_pion.obj", true, true, true, true, m_Pion );
+            Load3DModelFromObjFile( "Data/Models/chess_pion.obj", true, true, true, false, m_Pion );
             Load3DModelFromObjFile( "Data/Models/case.obj", true, true, true, false, m_Case );
         }
 

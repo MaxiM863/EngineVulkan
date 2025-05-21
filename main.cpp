@@ -71,9 +71,9 @@ std::vector<std::string> get_filenames( std::filesystem::path path )
 
 int main(void) {
 
-	Graphics engine;
+	::Graphics engine;
 
-	WindowFramework window("Maxim Engine 1_0", 100, 100, 1000, 1000, engine);
+	WindowFramework window("Maxim Engine 1_0", 500, 500, 1000, 1000, engine);
 
 	window.Render();
 

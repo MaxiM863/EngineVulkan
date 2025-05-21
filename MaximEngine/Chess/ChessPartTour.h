@@ -11,7 +11,7 @@ class ChessPartTour : public ChessPart
             this->colorPart = color;
         }
 
-        std::vector<int> deplacementPossible(int position, std::vector<int> occupe, int color, bool isPion) override {
+        std::vector<int> deplacementPossible(int position, std::vector<int> occupe, std::vector<ChessPart*> parts, int color, bool isPion, int& mange) override {
             
             std::vector<int> rep;
 
@@ -20,17 +20,8 @@ class ChessPartTour : public ChessPart
 
                 if(position + (i+1)*(8) < 64)
                 {
-                    
-                    if(isOccupied(position+(i+1)*(8), occupe))
-                    {
-                    
-                        break;
-                    }
-                    else
-                    {
-                        
-                        rep.push_back(position+(i+1)*(8));
-                    }
+                    if(isOpponant(position + (i+1)*(8), color, parts)) rep.push_back(position+(i+1)*(8));
+                    if(isOccupied(position+(i+1)*(8), occupe)) break;
                 }
             }
 
@@ -38,17 +29,8 @@ class ChessPartTour : public ChessPart
             {
                 if(position + (i+1)*(1) < 64)
                 {
-                    
-                    if(isOccupied(position+(i+1)*(1), occupe))
-                    {
-                    
-                        break;
-                    }
-                    else
-                    {
-                        
-                        rep.push_back(position+(i+1)*(1));
-                    }
+                    if(isOpponant(position + (i+1)*(1), color, parts)) rep.push_back(position+(i+1)*(1));
+                    if(isOccupied(position+(i+1)*(1), occupe)) break;
                 }
             }
 
@@ -56,17 +38,8 @@ class ChessPartTour : public ChessPart
             {
                 if(position - (i+1)*(1) < 64)
                 {
-                    
-                    if(isOccupied(position - (i+1)*(1), occupe))
-                    {
-                    
-                        break;
-                    }
-                    else
-                    {
-                        
-                        rep.push_back(position - (i+1)*(1));
-                    }
+                    if(isOpponant(position - (i+1)*(1), color, parts)) rep.push_back(position - (i+1)*(1));
+                    if(isOccupied(position - (i+1)*(1), occupe)) break;
                 }
             }
 
@@ -74,17 +47,8 @@ class ChessPartTour : public ChessPart
             {
                 if(position - (i+1)*(8) < 64)
                 {
-                    
-                    if(isOccupied(position - (i+1)*(8), occupe))
-                    {
-                    
-                        break;
-                    }
-                    else
-                    {
-                        
-                        rep.push_back(position - (i+1)*(8));
-                    }
+                    if(isOpponant(position - (i+1)*(8), color, parts)) rep.push_back(position - (i+1)*(8));
+                    if(isOccupied(position - (i+1)*(8), occupe)) break;
                 }
             }
 

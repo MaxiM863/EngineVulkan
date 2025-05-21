@@ -16,7 +16,8 @@ target_sources(EngineMaxim PRIVATE
 "../Samples/Common_Files/CookbookSampleFramework.cpp"
 "../Samples/Common_Files/OrbitingCamera.cpp")
 
-target_include_directories(EngineMaxim PRIVATE "./Chess")
+
+
 
 include(FetchContent)
 
@@ -28,10 +29,12 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(glm)
 
+
+
 if(WIN32)
     
     add_definitions(-DVK_USE_PLATFORM_WIN32_KHR)
-    target_link_libraries(EngineMaxim PRIVATE Cookbook)
+    target_link_libraries(EngineMaxim PUBLIC Cookbook)
 
     add_custom_command(TARGET ${PROJECT_NAME}  POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
@@ -63,4 +66,4 @@ if(UNIX)
 
 endif(UNIX)
 
-target_include_directories(EngineMaxim PRIVATE "./Cookbook" "./Samples/Common_Files" "./Library/Common_Files" "./Library/Source_Files" "./External" "./MaximEngine" "./build/_deps/glm-src/")
+target_include_directories(EngineMaxim PRIVATE "./Cookbook" "./Samples/Common_Files" "./Library/Common_Files" "./Library/Source_Files" "./External" "./MaximEngine" "./build/_deps/glm-src/" "MaximEngine/Chess/")
