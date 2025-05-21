@@ -45,29 +45,42 @@ struct BMPInfoHeader {
 class sdlTextEngine
 {
 
-  //VkDestroyer(VkBuffer)               VertexBuffer;
+  VkDestroyer(VkBuffer)               VertexBuffer;
   VkDestroyer(VkDeviceMemory)         BufferMemory;
   
-  //VkDestroyer(VkImage)                Image;
+  VkDestroyer(VkImage)                Image;
+  VkDestroyer(VkImageView)            ImageView;
   VkDestroyer(VkDeviceMemory)         ImageMemory;
   
-  //VkDestroyer(VkSampler)              Sampler;
+  VkDestroyer(VkSampler)              Sampler;
   
-  //VkDestroyer(VkDescriptorSetLayout)  DescriptorSetLayout;
-  //VkDestroyer(VkDescriptorPool)       DescriptorPool;
-  //std::vector<VkDescriptorSet>        DescriptorSets;
+  VkDestroyer(VkDescriptorSetLayout)  DescriptorSetLayout;
+  VkDestroyer(VkDescriptorPool)       DescriptorPool;
+  std::vector<VkDescriptorSet>        DescriptorSets;
   
-  //VkDestroyer(VkRenderPass)           RenderPass;
-  //VkDestroyer(VkPipelineLayout)       PipelineLayout;
-  //VkDestroyer(VkPipeline)             GraphicsPipeline;
+  VkDestroyer(VkRenderPass)           RenderPass;
+  VkDestroyer(VkPipelineLayout)       PipelineLayout;
+  VkDestroyer(VkPipeline)             GraphicsPipeline;
 
     OrbitingCamera Camera;
 
     public:
+
+        VkPipelineLayout getPipelineLayout() { return PipelineLayout.Object.Handle; };
+
+        VkPipeline getGraphicsPipeline() { return GraphicsPipeline.Object.Handle; };
+
+        VkDescriptorSetLayout getDescriptorSetLayout() { return DescriptorSetLayout.Object.Handle; };
+
+        VkDescriptorPool getDescriptorPool() { return DescriptorPool.Object.Handle; };
+
+        std::vector<VkDescriptorSet> getDescriptorSet() { return DescriptorSets; };
+
+        VkBuffer getVertexBuffer() { return VertexBuffer.Object.Handle; };
     
         sdlTextEngine(){};   
     
-        std::vector<BYTE> sdlTextEngineT(int width, int height, HWND hWnd, int fontSize, int fontColor, int backGColor, std::string s) {
+        std::vector<BYTE> sdlTextEngineT(int width, int height, int fontSize, int fontColor, int backGColor, std::string s) {
 
           GdiplusStartupInput gdiplusStartupInput;
           ULONG_PTR gdiplusToken;
@@ -174,8 +187,8 @@ class sdlTextEngine
       printf("BMP header written to output.bmp\n");
     }
     
-    bool Initialize(std::string text, int fontSize, int fontColor, int backGColor, float pos_x0, float pos_x1, float pos_y0, float pos_y1, HWND hWnd, int width, int height, VkDevice LogicalDevice, VkPhysicalDevice PhysicalDevice, QueueParameters& GraphicsQueue, VkCommandBuffer& CommandBuffer, VkSampler& Sampler, VkImage& Image, VkImageView& ImageView, SwapchainParameters& Swapchain, VkRenderPass& RenderPass,
-                    VkPipelineLayout& PipelineLayout, VkPipeline& GraphicsPipeline, std::vector<VkDescriptorSet>& DescriptorSets, VkDescriptorSetLayout& DescriptorSetLayout, VkDescriptorPool& DescriptorPool, VkBuffer& VertexBuffer)
+    bool Initialize(std::string text, int fontSize, int fontColor, int backGColor, float pos_x0, float pos_x1, float pos_y0, float pos_y1, int width, int height, VkDevice LogicalDevice, VkPhysicalDevice PhysicalDevice, QueueParameters& GraphicsQueue, 
+                    VkCommandBuffer& CommandBuffer, SwapchainParameters& Swapchain)
     {
       
       //VkDestroyer(VkDevice) LogicalDevice;
@@ -186,16 +199,16 @@ class sdlTextEngine
 
       // Combined image sampler
       
-      std::vector<unsigned char> image_data = sdlTextEngineT(width, height, hWnd, fontSize, fontColor, backGColor, text);
+      std::vector<unsigned char> image_data = sdlTextEngineT(width, height, fontSize, fontColor, backGColor, text);
 
-      
+      InitVkDestroyer( LogicalDevice, Sampler);
       InitVkDestroyer( LogicalDevice, ImageMemory );
       //InitVkDestroyer( LogicalDevice, ImageView );
       if( !CreateCombinedImageSampler( PhysicalDevice, LogicalDevice, VK_IMAGE_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM, { (uint32_t)width, (uint32_t)height, 1 },
         1, 1, VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, false, VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_ASPECT_COLOR_BIT, VK_FILTER_LINEAR,
         VK_FILTER_LINEAR, VK_SAMPLER_MIPMAP_MODE_NEAREST, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
         VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, 0.0f, false, 1.0f, false, VK_COMPARE_OP_ALWAYS, 0.0f, 1.0f, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK,
-        false, Sampler, Image, *ImageMemory, ImageView ) ) {
+        false, *Sampler, *Image, *ImageMemory, *ImageView ) ) {
         return false;
       }
 
@@ -206,7 +219,7 @@ class sdlTextEngine
         1                             // uint32_t               layerCount
       };
       if( !UseStagingBufferToUpdateImageWithDeviceLocalMemoryBound( PhysicalDevice, LogicalDevice, static_cast<VkDeviceSize>(image_data.size()),
-        &image_data[0], Image, image_subresource_layer, { 0, 0, 0 }, { (uint32_t)width, (uint32_t)height, 1 }, VK_IMAGE_LAYOUT_UNDEFINED,
+        &image_data[0], *Image, image_subresource_layer, { 0, 0, 0 }, { (uint32_t)width, (uint32_t)height, 1 }, VK_IMAGE_LAYOUT_UNDEFINED,
         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, VK_ACCESS_SHADER_READ_BIT, VK_IMAGE_ASPECT_COLOR_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
         VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, GraphicsQueue.Handle, CommandBuffer, {} ) ) {
         return false;
@@ -224,7 +237,7 @@ class sdlTextEngine
       };
       
       //InitVkDestroyer( LogicalDevice, DescriptorSetLayout );
-      if( !CreateDescriptorSetLayout( LogicalDevice, { descriptor_set_layout_binding }, DescriptorSetLayout ) ) {
+      if( !CreateDescriptorSetLayout( LogicalDevice, { descriptor_set_layout_binding }, *DescriptorSetLayout ) ) {
         return false;
       }
 
@@ -234,11 +247,11 @@ class sdlTextEngine
       };
       
       //InitVkDestroyer( LogicalDevice, DescriptorPool );
-      if( !CreateDescriptorPool( LogicalDevice, false, 1, { descriptor_pool_size }, DescriptorPool ) ) {
+      if( !CreateDescriptorPool( LogicalDevice, false, 1, { descriptor_pool_size }, *DescriptorPool ) ) {
         return false;
       }
 
-      if( !AllocateDescriptorSets( LogicalDevice, DescriptorPool, { DescriptorSetLayout }, DescriptorSets ) ) {
+      if( !AllocateDescriptorSets( LogicalDevice, *DescriptorPool, { *DescriptorSetLayout }, DescriptorSets ) ) {
 
         return false;
       }
@@ -250,8 +263,8 @@ class sdlTextEngine
         VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,  // VkDescriptorType                     TargetDescriptorType
         {                                           // std::vector<VkDescriptorImageInfo>   ImageInfos
           {
-            Sampler,                                 // VkSampler                            sampler
-            ImageView,                               // VkImageView                          imageView
+            *Sampler,                                 // VkSampler                            sampler
+            *ImageView,                               // VkImageView                          imageView
             VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL  // VkImageLayout                        imageLayout
           }
         }
@@ -313,7 +326,7 @@ class sdlTextEngine
 
 
       //InitVkDestroyer( LogicalDevice, RenderPass );
-      if( !CreateRenderPass( LogicalDevice, attachment_descriptions, subpass_parameters, subpass_dependencies, RenderPass ) ) {
+      if( !CreateRenderPass( LogicalDevice, attachment_descriptions, subpass_parameters, subpass_dependencies, *RenderPass ) ) {
         return false;
       }
 
@@ -445,21 +458,21 @@ class sdlTextEngine
       SpecifyPipelineDynamicStates( dynamic_states, dynamic_state_create_info );
 
       //InitVkDestroyer( LogicalDevice, PipelineLayout );
-      if( !CreatePipelineLayout( LogicalDevice, { DescriptorSetLayout }, {}, PipelineLayout ) ) {
+      if( !CreatePipelineLayout( LogicalDevice, { *DescriptorSetLayout }, {}, *PipelineLayout ) ) {
         return false;
       }
 
       VkGraphicsPipelineCreateInfo graphics_pipeline_create_info;
       SpecifyGraphicsPipelineCreationParameters( 0, shader_stage_create_infos, vertex_input_state_create_info, input_assembly_state_create_info,
         nullptr, &viewport_state_create_info, rasterization_state_create_info, &multisample_state_create_info, nullptr, &blend_state_create_info,
-        &dynamic_state_create_info, PipelineLayout, RenderPass, 0, VK_NULL_HANDLE, -1, graphics_pipeline_create_info );
+        &dynamic_state_create_info, *PipelineLayout, *RenderPass, 0, VK_NULL_HANDLE, -1, graphics_pipeline_create_info );
 
       std::vector<VkPipeline> graphics_pipeline;
       if( !CreateGraphicsPipelines( LogicalDevice, { graphics_pipeline_create_info }, VK_NULL_HANDLE, graphics_pipeline ) ) {
         return false;
       }
       //InitVkDestroyer( LogicalDevice, GraphicsPipeline );
-      GraphicsPipeline = graphics_pipeline[0];
+      *GraphicsPipeline = graphics_pipeline[0];
 
       // Vertex data
       std::vector<float> vertices = {
@@ -471,16 +484,16 @@ class sdlTextEngine
       };
 
       //InitVkDestroyer( LogicalDevice, VertexBuffer );
-      if( !CreateBuffer( LogicalDevice, sizeof(vertices[0]) * vertices.size(), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VertexBuffer ) ) {
+      if( !CreateBuffer( LogicalDevice, sizeof(vertices[0]) * vertices.size(), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, *VertexBuffer ) ) {
         return false;
       }
 
       InitVkDestroyer( LogicalDevice, BufferMemory );
-      if( !AllocateAndBindMemoryObjectToBuffer( PhysicalDevice, LogicalDevice, VertexBuffer, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, *BufferMemory ) ) {
+      if( !AllocateAndBindMemoryObjectToBuffer( PhysicalDevice, LogicalDevice, *VertexBuffer, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, *BufferMemory ) ) {
         return false;
       }
 
-      if( !UseStagingBufferToUpdateBufferWithDeviceLocalMemoryBound( PhysicalDevice, LogicalDevice, sizeof( vertices[0] ) * vertices.size(), &vertices[0], VertexBuffer, 0, 0,
+      if( !UseStagingBufferToUpdateBufferWithDeviceLocalMemoryBound( PhysicalDevice, LogicalDevice, sizeof( vertices[0] ) * vertices.size(), &vertices[0], *VertexBuffer, 0, 0,
         VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, GraphicsQueue.Handle, CommandBuffer, {} ) ) {
         return false;
       }

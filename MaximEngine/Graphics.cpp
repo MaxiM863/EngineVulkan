@@ -5,23 +5,10 @@ using namespace VulkanCookbook;
 class Graphics : public VulkanCookbook::VulkanCookbookSample
 {
 
-    VkDestroyer(VkBuffer)               VertexBuffer;
-    VkDestroyer(VkDeviceMemory)         BufferMemory;
-    
-    VkDestroyer(VkImage)                Image;
-    //VkDestroyer(VkDeviceMemory)         ImageMemory;
-    VkDestroyer(VkImageView)            ImageView;
-    VkDestroyer(VkSampler)              Sampler;
-    
-    VkDestroyer(VkDescriptorSetLayout)  DescriptorSetLayout;
-    VkDestroyer(VkDescriptorPool)       DescriptorPool;
-    std::vector<VkDescriptorSet>        DescriptorSets;
-    
-    VkDestroyer(VkRenderPass)           RenderPass;
-    VkDestroyer(VkPipelineLayout)       PipelineLayout;
-    VkDestroyer(VkPipeline)             GraphicsPipeline;
+  sdlTextEngine*                      aas;
+ 
+  vessel* vess;
 
-    sdlTextEngine*                      aas;
 
 public:
 
@@ -35,28 +22,19 @@ virtual bool Initialize( WindowParameters window_parameters, HWND hWnd ) overrid
     return false;
   }
 
-  InitVkDestroyer( LogicalDevice, Sampler );
-  InitVkDestroyer( LogicalDevice, Image );
-  InitVkDestroyer( LogicalDevice, RenderPass);
-  InitVkDestroyer( LogicalDevice, PipelineLayout);
-  InitVkDestroyer( LogicalDevice, GraphicsPipeline);
-  InitVkDestroyer( LogicalDevice, DescriptorSetLayout);
-  InitVkDestroyer( LogicalDevice, DescriptorPool);
-  InitVkDestroyer( LogicalDevice, Sampler );
-  InitVkDestroyer( LogicalDevice, VertexBuffer );
+  float pos_x0 = -0.15f;
+  float pos_x1 = 0.15f;
+  float pos_y0 = -0.03f;
+  float pos_y1 = 0.03f;
+
+  
   aas = new sdlTextEngine();
 
-  InitVkDestroyer( LogicalDevice, ImageView );
+  aas->Initialize("Hello you !!!", 200, 0x00FF0000, 0x00FFFFFF, pos_x0, pos_x1, pos_y0, pos_y1, 1000, 200, LogicalDevice.Object.Handle, PhysicalDevice, GraphicsQueue, FramesResources.front().CommandBuffer[0], Swapchain);
 
-
-  float pos_x0 = -0.5f;
-  float pos_x1 = 0.5f;
-  float pos_y0 = -0.25f;
-  float pos_y1 = 0.25f;
-
-  aas->Initialize("Hello you !!!", 42, 0x00FF0000, 0x00000000, pos_x0, pos_x1, pos_y0, pos_y1, hWnd, 1000, 500, LogicalDevice.Object.Handle, PhysicalDevice, GraphicsQueue, FramesResources.front().CommandBuffer[0], Sampler.Object.Handle, Image.Object.Handle, 
-                  ImageView.Object.Handle, Swapchain, RenderPass.Object.Handle, PipelineLayout.Object.Handle, GraphicsPipeline.Object.Handle, DescriptorSets, DescriptorSetLayout.Object.Handle, DescriptorPool.Object.Handle, VertexBuffer.Object.Handle);
-
+  vess = new vessel();
+ 
+  vess->Initialize(LogicalDevice.Object.Handle, PhysicalDevice, GraphicsQueue, FramesResources.front().CommandBuffer[0], Swapchain);
 
   return true;
 }
@@ -84,9 +62,9 @@ virtual bool Draw() override {
     }
 
     // Drawing
-    BeginRenderPass( command_buffer[0], *RenderPass, framebuffer, { { 0, 0 }, Swapchain.Size }, { { 0.1f, 0.2f, 0.3f, 1.0f } }, VK_SUBPASS_CONTENTS_INLINE );
+    //BeginRenderPass( command_buffer[0], *RenderPass2, framebuffer, { { 0, 0 }, Swapchain.Size }, { { 0.1f, 0.2f, 0.3f, 1.0f } }, VK_SUBPASS_CONTENTS_INLINE );
 
-    BindPipelineObject( command_buffer[0], VK_PIPELINE_BIND_POINT_GRAPHICS, *GraphicsPipeline );
+
     VkViewport viewport = {
       0.0f,                                       // float    x
       0.0f,                                       // float    y
@@ -109,12 +87,89 @@ virtual bool Draw() override {
     };
     SetScissorStateDynamically( command_buffer[0], 0, { scissor } );
 
-    BindDescriptorSets( command_buffer[0], VK_PIPELINE_BIND_POINT_GRAPHICS, *PipelineLayout, 0, DescriptorSets, {} );
+    
 
-    BindVertexBuffers( command_buffer[0], 0, { { *VertexBuffer, 0 } } );
+    ///////////////////////////////////////////////////////
+
+    if( true ) {
+      
+
+      BufferTransition pre_transfer_transition = {
+        *vess->getUniformBuffer(),               // VkBuffer         Buffer
+        VK_ACCESS_UNIFORM_READ_BIT,   // VkAccessFlags    CurrentAccess
+        VK_ACCESS_TRANSFER_WRITE_BIT, // VkAccessFlags    NewAccess
+        VK_QUEUE_FAMILY_IGNORED,      // uint32_t         CurrentQueueFamily
+        VK_QUEUE_FAMILY_IGNORED       // uint32_t         NewQueueFamily
+      };
+      SetBufferMemoryBarrier( command_buffer[0], VK_PIPELINE_STAGE_VERTEX_SHADER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, { pre_transfer_transition } );
+
+      std::vector<VkBufferCopy> regions = {
+        {
+          0,                        // VkDeviceSize     srcOffset
+          0,                        // VkDeviceSize     dstOffset
+          2 * 16 * sizeof( float )  // VkDeviceSize     size
+        }
+      };
+      CopyDataBetweenBuffers( command_buffer[0], vess->getStagingBuffer(), *vess->getUniformBuffer(), regions );
+
+      BufferTransition post_transfer_transition = {
+        *vess->getUniformBuffer(),               // VkBuffer         Buffer
+        VK_ACCESS_TRANSFER_WRITE_BIT, // VkAccessFlags    CurrentAccess
+        VK_ACCESS_UNIFORM_READ_BIT,   // VkAccessFlags    NewAccess
+        VK_QUEUE_FAMILY_IGNORED,      // uint32_t         CurrentQueueFamily
+        VK_QUEUE_FAMILY_IGNORED       // uint32_t         NewQueueFamily
+      };
+      SetBufferMemoryBarrier( command_buffer[0], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT, { post_transfer_transition } );
+    }
+
+    if( PresentQueue.FamilyIndex != GraphicsQueue.FamilyIndex ) {
+      ImageTransition image_transition_before_drawing = {
+        Swapchain.Images[swapchain_image_index],  // VkImage              Image
+        VK_ACCESS_MEMORY_READ_BIT,                // VkAccessFlags        CurrentAccess
+        VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,     // VkAccessFlags        NewAccess
+        VK_IMAGE_LAYOUT_UNDEFINED,                // VkImageLayout        CurrentLayout
+        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, // VkImageLayout        NewLayout
+        PresentQueue.FamilyIndex,                 // uint32_t             CurrentQueueFamily
+        GraphicsQueue.FamilyIndex,                // uint32_t             NewQueueFamily
+        VK_IMAGE_ASPECT_COLOR_BIT                 // VkImageAspectFlags   Aspect
+      };
+      SetImageMemoryBarrier( command_buffer[0], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, { image_transition_before_drawing } );
+    }
+
+    // Drawing
+    BeginRenderPass( command_buffer[0], vess->getRenderPass(), framebuffer, { { 0, 0 }, Swapchain.Size }, { { 0.6f, 0.2f, 0.3f, 1.0f }, { 1.0f, 0 } }, VK_SUBPASS_CONTENTS_INLINE );
+
+    
+
+    //BeginRenderPass( command_buffer[0], *RenderPass, framebuffer, { { 0, 0 }, Swapchain.Size }, { { 0.1f, 0.2f, 0.3f, 1.0f }, { 1.0f, 0 } }, VK_SUBPASS_CONTENTS_INLINE );
+
+    BindPipelineObject( command_buffer[0], VK_PIPELINE_BIND_POINT_GRAPHICS, vess->getGraphicsPipeline() );
+    
+    BindVertexBuffers( command_buffer[0], 0, { { vess->getVertexBuffer(), 0 } } );
+
+    BindDescriptorSets( command_buffer[0], VK_PIPELINE_BIND_POINT_GRAPHICS, vess->getPipelineLayout(), 0, vess->getDescriptorSet(), {} );
+
+
+    BindPipelineObject( command_buffer[0], VK_PIPELINE_BIND_POINT_GRAPHICS, vess->getGraphicsPipeline() );
+
+    for( size_t i = 0; i < vess->getMesh().Parts.size(); ++i ) {
+      DrawGeometry( command_buffer[0], vess->getMesh().Parts[i].VertexCount, 1, vess->getMesh().Parts[i].VertexOffset, 0 );
+    }
+
+
+    BindPipelineObject( command_buffer[0], VK_PIPELINE_BIND_POINT_GRAPHICS, aas->getGraphicsPipeline() );
+
+    BindDescriptorSets( command_buffer[0], VK_PIPELINE_BIND_POINT_GRAPHICS, aas->getPipelineLayout(), 0, aas->getDescriptorSet(), {} );
+
+    BindVertexBuffers( command_buffer[0], 0, { { aas->getVertexBuffer(), 0 } } );
 
     DrawGeometry( command_buffer[0], 4, 1, 0, 0 );
 
+
+
+    
+
+    ///////////////////////////////////////////////////////
     EndRenderPass( command_buffer[0] );
 
     if( PresentQueue.FamilyIndex != GraphicsQueue.FamilyIndex ) {
@@ -138,7 +193,7 @@ virtual bool Draw() override {
   };
 
   return IncreasePerformanceThroughIncreasingTheNumberOfSeparatelyRenderedFrames( *LogicalDevice, GraphicsQueue.Handle, PresentQueue.Handle,
-    *Swapchain.Handle, Swapchain.Size, Swapchain.ImageViewsRaw, *RenderPass, {}, prepare_frame, FramesResources );
+    *Swapchain.Handle, Swapchain.Size, Swapchain.ImageViewsRaw, vess->getRenderPass(), {}, prepare_frame, FramesResources );
 }
 
 
