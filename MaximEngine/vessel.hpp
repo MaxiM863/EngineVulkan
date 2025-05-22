@@ -5,6 +5,7 @@
 #include <fstream>
 #include "CookbookSampleFramework.h"
 #include "OrbitingCamera.h"
+#include "LoadFile.hpp"
 
 class vessel
 {
@@ -56,22 +57,27 @@ class vessel
 
         VkBuffer getVertexBuffer() { return VertexBuffer.Object.Handle; };
 
-        VkBuffer* getUniformBuffer() { return &UniformBuffer.Object.Handle; };
+        VkBuffer getUniformBuffer() { return UniformBuffer.Object.Handle; };
 
         VkBuffer getStagingBuffer() { return StagingBuffer.Object.Handle; };
 
         VkRenderPass getRenderPass() { return RenderPass.Object.Handle; };
     
-        bool Initialize(VkDevice LogicalDevice, VkPhysicalDevice PhysicalDevice, QueueParameters& GraphicsQueue, VkCommandBuffer& CommandBuffer, SwapchainParameters& Swapchain)
+        bool Initialize(VkDevice LogicalDevice, VkPhysicalDevice PhysicalDevice, QueueParameters& GraphicsQueue, VkCommandBuffer& CommandBuffer, SwapchainParameters& Swapchain, Mesh m)
         {
+            uint32_t stride = 32;
         
             // Vertex data
-        if( !Load3DModelFromObjFile( "Data/Models/knot.obj", true, false, false, true, Model ) ) {
+        Model = m;
+ 
+        // Vertex data
+        /*if( !Load3DModelFromObjFile( "Data/Models/suzane.obj", true, true, false, false, Model ) ) {
             return false;
-        }
-    
-        //InitVkDestroyer( LogicalDevice, VertexBuffer );
-        if( !CreateBuffer( LogicalDevice, sizeof( Model.Data[0] ) * Model.Data.size(),
+        }*/
+
+
+        InitVkDestroyer( LogicalDevice, VertexBuffer );
+        if( !CreateBuffer( LogicalDevice, 4 * Model.Data.size(),
             VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, *VertexBuffer ) ) {
             return false;
         }
@@ -81,31 +87,31 @@ class vessel
             return false;
         }
     
-        if( !UseStagingBufferToUpdateBufferWithDeviceLocalMemoryBound( PhysicalDevice, LogicalDevice, sizeof( Model.Data[0] ) * Model.Data.size(),
+        if( !UseStagingBufferToUpdateBufferWithDeviceLocalMemoryBound( PhysicalDevice, LogicalDevice,  4 * Model.Data.size(),
             &Model.Data[0], *VertexBuffer, 0, 0, VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
             GraphicsQueue.Handle, CommandBuffer, {} ) ) {
             return false;
         }
     
         // Staging buffer
-        //InitVkDestroyer( LogicalDevice, StagingBuffer );
+        InitVkDestroyer( LogicalDevice, StagingBuffer );
         if( !CreateBuffer( LogicalDevice, 2 * 16 * sizeof(float), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, *StagingBuffer ) ) {
             return false;
         }
-        //InitVkDestroyer( LogicalDevice, StagingBufferMemory );
+        InitVkDestroyer( LogicalDevice, StagingBufferMemory );
         if( !AllocateAndBindMemoryObjectToBuffer( PhysicalDevice, LogicalDevice, *StagingBuffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, *StagingBufferMemory ) ) {
             return false;
         }
     
         // Uniform buffer
-        //InitVkDestroyer( LogicalDevice, UniformBuffer );
-        //InitVkDestroyer( LogicalDevice, UniformBufferMemory );
+        InitVkDestroyer( LogicalDevice, UniformBuffer );
+        InitVkDestroyer( LogicalDevice, UniformBufferMemory );
         if( !CreateUniformBuffer( PhysicalDevice, LogicalDevice, 2 * 16 * sizeof( float ), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
             *UniformBuffer, *UniformBufferMemory ) ) {
             return false;
         }
     
-        if( !UpdateStagingBuffer( true, LogicalDevice, *StagingBufferMemory, static_cast<float>(Swapchain.Size.width) / static_cast<float>(Swapchain.Size.height) ) ) {
+        if( !UpdateStagingBuffer( true, LogicalDevice, StagingBufferMemory.Object.Handle, static_cast<float>(Swapchain.Size.width) / static_cast<float>(Swapchain.Size.height) ) ) {
             return false;
         }
     
@@ -220,20 +226,20 @@ class vessel
             }
         };
     
-        //InitVkDestroyer( LogicalDevice, RenderPass );
+        InitVkDestroyer( LogicalDevice, RenderPass );
         if( !CreateRenderPass( LogicalDevice, attachment_descriptions, subpass_parameters, subpass_dependencies, *RenderPass ) ) {
             return false;
         }
     
         // Graphics pipeline
     
-        //InitVkDestroyer( LogicalDevice, PipelineLayout );
+        InitVkDestroyer( LogicalDevice, PipelineLayout );
         if( !CreatePipelineLayout( LogicalDevice, { *DescriptorSetLayout }, {}, *PipelineLayout ) ) {
             return false;
         }
     
         std::vector<unsigned char> vertex_shader_spirv;
-        if( !GetBinaryFileContents( "Data/Shaders/11 Lighting/01 Rendering a geometry with vertex diffuse lighting/shader.vert.spv", vertex_shader_spirv ) ) {
+        if( !GetBinaryFileContents( "Data/Shaders/11 Lighting/01 Rendering a geometry with vertex diffuse lighting/vert.spv", vertex_shader_spirv ) ) {
             return false;
         }
     
@@ -244,7 +250,7 @@ class vessel
         }
     
         std::vector<unsigned char> fragment_shader_spirv;
-        if( !GetBinaryFileContents( "Data/Shaders/11 Lighting/01 Rendering a geometry with vertex diffuse lighting/shader.frag.spv", fragment_shader_spirv ) ) {
+        if( !GetBinaryFileContents( "Data/Shaders/11 Lighting/01 Rendering a geometry with vertex diffuse lighting/frag.spv", fragment_shader_spirv ) ) {
             return false;
         }
         VkDestroyer(VkShaderModule) fragment_shader_module;
@@ -274,7 +280,7 @@ class vessel
         std::vector<VkVertexInputBindingDescription> vertex_input_binding_descriptions = {
             {
             0,                            // uint32_t                     binding
-            6 * sizeof( float ),          // uint32_t                     stride
+            32,          // uint32_t                     stride
             VK_VERTEX_INPUT_RATE_VERTEX   // VkVertexInputRate            inputRate
             }
         };
@@ -290,7 +296,13 @@ class vessel
             1,                                                                        // uint32_t   location
             0,                                                                        // uint32_t   binding
             VK_FORMAT_R32G32B32_SFLOAT,                                               // VkFormat   format
-            3 * sizeof( float )                                                       // uint32_t   offset
+            3 * sizeof(float)                                                                         // uint32_t   offset
+            },
+            {
+            2,                                                                        // uint32_t   location
+            0,                                                                        // uint32_t   binding
+            VK_FORMAT_R32G32_SFLOAT,                                               // VkFormat   format
+            6 * sizeof(float)                                                       // uint32_t   offset
             }
         };
     
@@ -378,20 +390,19 @@ class vessel
 
         bool UpdateStagingBuffer( bool force, VkDevice LogicalDevice, VkDeviceMemory& StagingBufferMemory, float ratio ) {
             UpdateUniformBuffer = true;
-            static float horizontal_angle = 0.0f;
-            static float vertical_angle = 0.0f;
+            static float horizontal_angle = 90.0f;
+            static float vertical_angle = 90.0f;
             if( force ) {
                       
               Matrix4x4 rotation_matrix = PrepareRotationMatrix( vertical_angle, { 1.0f, 0.0f, 0.0f } ) * PrepareRotationMatrix( horizontal_angle, { 0.0f, -1.0f, 0.0f } );
-              Matrix4x4 translation_matrix = PrepareTranslationMatrix( 0.0f, 0.0f, -4.0f );
+              Matrix4x4 translation_matrix = PrepareTranslationMatrix( 0.0f, 0.0f, -50.0f );
               Matrix4x4 model_view_matrix = translation_matrix * rotation_matrix;
         
               if( !MapUpdateAndUnmapHostVisibleMemory( LogicalDevice, StagingBufferMemory, 0, sizeof( model_view_matrix[0] ) * model_view_matrix.size(), &model_view_matrix[0], true, nullptr ) ) {
                 return false;
               }
         
-              Matrix4x4 perspective_matrix = PreparePerspectiveProjectionMatrix( ratio,
-                50.0f, 0.5f, 10.0f );
+              Matrix4x4 perspective_matrix = PreparePerspectiveProjectionMatrix( ratio, 50.0f, 0.01f, 1000.0f );
         
               if( !MapUpdateAndUnmapHostVisibleMemory( LogicalDevice, StagingBufferMemory, sizeof( model_view_matrix[0] ) * model_view_matrix.size(),
                 sizeof( perspective_matrix[0] ) * perspective_matrix.size(), &perspective_matrix[0], true, nullptr ) ) {

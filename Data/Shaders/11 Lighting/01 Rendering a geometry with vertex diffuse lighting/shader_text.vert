@@ -1,7 +1,8 @@
 #version 450
 
-layout( location = 0 ) in vec3 app_position;
-layout( location = 1 ) in vec2 app_texcoord;
+layout( location = 0 ) in vec4 app_position;
+layout( location = 1 ) in vec4 app_norm;
+layout( location = 2 ) in vec2 app_texcoord;
 
 layout( set = 0, binding = 0 ) uniform UniformBuffer {
   mat4 ModelViewMatrix;
@@ -10,11 +11,15 @@ layout( set = 0, binding = 0 ) uniform UniformBuffer {
 
 layout( location = 0 ) out vec3 vert_position;
 layout( location = 1 ) out vec2 vert_texcoord;
+layout( location = 2 ) out vec3 vert_normal;
 
 void main() {
-  vec4 position = ModelViewMatrix * vec4(app_position, 1.0f);
+  vec4 position = ModelViewMatrix * app_position;
   gl_Position = ProjectionMatrix * position;
+
+  vec4 norm = app_norm;
   
   vert_position = position.xyz;
+  vert_normal = norm.xyz;
   vert_texcoord = app_texcoord;
 }

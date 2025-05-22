@@ -1,0 +1,8 @@
+﻿  Building Custom Rule C:/Users/thibo/OneDrive/Desktop/MaximEngine/EngineVulkan/CMakeLists.txt
+  main.cpp
+  OS.cpp
+  Camera.cpp
+  CookbookSampleFramework.cpp
+  OrbitingCamera.cpp
+  Generating Code...
+  EngineMaxim.vcxproj -> C:\Users\thibo\OneDrive\Desktop\MaximEngine\EngineVulkan\build64\Debug\EngineMaxim.exe

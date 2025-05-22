@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\thibo\OneDrive\Desktop\MaximEngine\EngineVulkan\build64\CMakeFiles\dff5bd6ed1f2a3e37ab4cfe9d763bac5\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{414DA76D-4B18-31E9-8E7C-B3CB3AC57AE5}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

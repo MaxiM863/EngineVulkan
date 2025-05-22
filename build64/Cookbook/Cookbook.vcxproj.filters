@@ -1,0 +1,99 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\thibo\OneDrive\Desktop\MaximEngine\EngineVulkan\Library\Source_Files\01_Instance_and_Devices\compacte.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\thibo\OneDrive\Desktop\MaximEngine\EngineVulkan\Library\Source_Files\02_Image_Presentation\compacte.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\thibo\OneDrive\Desktop\MaximEngine\EngineVulkan\Library\Source_Files\03_Command_Buffers_and_Synchronization\compacte.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\thibo\OneDrive\Desktop\MaximEngine\EngineVulkan\Library\Source_Files\04_Resources_and_Memory\compacte.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\thibo\OneDrive\Desktop\MaximEngine\EngineVulkan\Library\Source_Files\05_Descriptor_Sets\compacte.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\thibo\OneDrive\Desktop\MaximEngine\EngineVulkan\Library\Source_Files\06_Render_Passes_and_Framebuffers\compacte.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\thibo\OneDrive\Desktop\MaximEngine\EngineVulkan\Library\Source_Files\08_Graphics_and_Compute_Pipelines\compacte.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\thibo\OneDrive\Desktop\MaximEngine\EngineVulkan\Library\Source_Files\09_Command_Recording_and_Drawing\compacte.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\thibo\OneDrive\Desktop\MaximEngine\EngineVulkan\Library\Source_Files\10_Helper_Recipes\compacte.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\thibo\OneDrive\Desktop\MaximEngine\EngineVulkan\Library\Common_Files\VulkanFunctions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\thibo\OneDrive\Desktop\MaximEngine\EngineVulkan\Library\Common_Files\Common.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\thibo\OneDrive\Desktop\MaximEngine\EngineVulkan\Library\Common_Files\Tools.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\thibo\OneDrive\Desktop\MaximEngine\EngineVulkan\Library\Source_Files\01_Instance_and_Devices\compacte.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\thibo\OneDrive\Desktop\MaximEngine\EngineVulkan\Library\Source_Files\02_Image_Presentation\compacte.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\thibo\OneDrive\Desktop\MaximEngine\EngineVulkan\Library\Source_Files\03_Command_Buffers_and_Synchronization\compacte.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\thibo\OneDrive\Desktop\MaximEngine\EngineVulkan\Library\Source_Files\04_Resources_and_Memory\compacte.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\thibo\OneDrive\Desktop\MaximEngine\EngineVulkan\Library\Source_Files\05_Descriptor_Sets\compacte.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\thibo\OneDrive\Desktop\MaximEngine\EngineVulkan\Library\Source_Files\06_Render_Passes_and_Framebuffers\compacte.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\thibo\OneDrive\Desktop\MaximEngine\EngineVulkan\Library\Source_Files\08_Graphics_and_Compute_Pipelines\compacte.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\thibo\OneDrive\Desktop\MaximEngine\EngineVulkan\Library\Source_Files\09_Command_Recording_and_Drawing\compacte.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\thibo\OneDrive\Desktop\MaximEngine\EngineVulkan\Library\Source_Files\10_Helper_Recipes\compacte.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\thibo\OneDrive\Desktop\MaximEngine\EngineVulkan\Library\Common_Files\VulkanFunctions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\thibo\OneDrive\Desktop\MaximEngine\EngineVulkan\Library\Common_Files\AllHeaders.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\thibo\OneDrive\Desktop\MaximEngine\EngineVulkan\Library\Common_Files\Common.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\thibo\OneDrive\Desktop\MaximEngine\EngineVulkan\Library\Common_Files\ListOfVulkanFunctions.inl">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\thibo\OneDrive\Desktop\MaximEngine\EngineVulkan\Library\Common_Files\Tools.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\thibo\OneDrive\Desktop\MaximEngine\EngineVulkan\Library\Common_Files\VulkanDestroyer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\thibo\OneDrive\Desktop\MaximEngine\EngineVulkan\Cookbook\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{9086209D-B883-31E4-A03E-1B275E143BB9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{7886DFA2-55BB-3F6A-8930-6E0FC515A903}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

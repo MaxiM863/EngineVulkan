@@ -7,8 +7,8 @@ class Graphics : public VulkanCookbook::VulkanCookbookSample
 
   sdlTextEngine*                      aas;
  
-  vessel* vess;
-
+  vessel** vess;
+  std::vector<Mesh> Models;
 
 public:
 
@@ -24,17 +24,31 @@ virtual bool Initialize( WindowParameters window_parameters, HWND hWnd ) overrid
 
   float pos_x0 = -0.15f;
   float pos_x1 = 0.15f;
-  float pos_y0 = -0.03f;
-  float pos_y1 = 0.03f;
+  float pos_y0 = 0.80f;
+  float pos_y1 = 0.86f;
 
   
   aas = new sdlTextEngine();
 
   aas->Initialize("Hello you !!!", 200, 0x00FF0000, 0x00FFFFFF, pos_x0, pos_x1, pos_y0, pos_y1, 1000, 200, LogicalDevice.Object.Handle, PhysicalDevice, GraphicsQueue, FramesResources.front().CommandBuffer[0], Swapchain);
 
-  vess = new vessel();
+  Load L;  
+  
+  // Vertex data
+  if( !L.Load3DModelFromTxtFile( "Data/Models/vessel_0.txt", Models ) ) {
+    
+    return false;
+  }
+
+  vess = new vessel*[Models.size()];
+
+  for(int i = 0 ; i < Models.size(); i++)
+  {
+    
+    vess[i] = new vessel();
  
-  vess->Initialize(LogicalDevice.Object.Handle, PhysicalDevice, GraphicsQueue, FramesResources.front().CommandBuffer[0], Swapchain);
+    vess[i]->Initialize(LogicalDevice.Object.Handle, PhysicalDevice, GraphicsQueue, FramesResources.front().CommandBuffer[0], Swapchain, Models[i]);
+  }
 
   return true;
 }
@@ -93,33 +107,36 @@ virtual bool Draw() override {
 
     if( true ) {
       
+      for(int i = 0 ; i < Models.size(); i++)
+      {
 
-      BufferTransition pre_transfer_transition = {
-        *vess->getUniformBuffer(),               // VkBuffer         Buffer
-        VK_ACCESS_UNIFORM_READ_BIT,   // VkAccessFlags    CurrentAccess
-        VK_ACCESS_TRANSFER_WRITE_BIT, // VkAccessFlags    NewAccess
-        VK_QUEUE_FAMILY_IGNORED,      // uint32_t         CurrentQueueFamily
-        VK_QUEUE_FAMILY_IGNORED       // uint32_t         NewQueueFamily
-      };
-      SetBufferMemoryBarrier( command_buffer[0], VK_PIPELINE_STAGE_VERTEX_SHADER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, { pre_transfer_transition } );
+        BufferTransition pre_transfer_transition = {
+          vess[i]->getUniformBuffer(),               // VkBuffer         Buffer
+          VK_ACCESS_UNIFORM_READ_BIT,   // VkAccessFlags    CurrentAccess
+          VK_ACCESS_TRANSFER_WRITE_BIT, // VkAccessFlags    NewAccess
+          VK_QUEUE_FAMILY_IGNORED,      // uint32_t         CurrentQueueFamily
+          VK_QUEUE_FAMILY_IGNORED       // uint32_t         NewQueueFamily
+        };
+        SetBufferMemoryBarrier( command_buffer[0], VK_PIPELINE_STAGE_VERTEX_SHADER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, { pre_transfer_transition } );
 
-      std::vector<VkBufferCopy> regions = {
-        {
-          0,                        // VkDeviceSize     srcOffset
-          0,                        // VkDeviceSize     dstOffset
-          2 * 16 * sizeof( float )  // VkDeviceSize     size
-        }
-      };
-      CopyDataBetweenBuffers( command_buffer[0], vess->getStagingBuffer(), *vess->getUniformBuffer(), regions );
+        std::vector<VkBufferCopy> regions = {
+          {
+            0,                        // VkDeviceSize     srcOffset
+            0,                        // VkDeviceSize     dstOffset
+            2 * 16 * sizeof( float )  // VkDeviceSize     size
+          }
+        };
+        CopyDataBetweenBuffers( command_buffer[0], vess[i]->getStagingBuffer(), vess[i]->getUniformBuffer(), regions );
 
-      BufferTransition post_transfer_transition = {
-        *vess->getUniformBuffer(),               // VkBuffer         Buffer
-        VK_ACCESS_TRANSFER_WRITE_BIT, // VkAccessFlags    CurrentAccess
-        VK_ACCESS_UNIFORM_READ_BIT,   // VkAccessFlags    NewAccess
-        VK_QUEUE_FAMILY_IGNORED,      // uint32_t         CurrentQueueFamily
-        VK_QUEUE_FAMILY_IGNORED       // uint32_t         NewQueueFamily
-      };
-      SetBufferMemoryBarrier( command_buffer[0], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT, { post_transfer_transition } );
+        BufferTransition post_transfer_transition = {
+          vess[i]->getUniformBuffer(),               // VkBuffer         Buffer
+          VK_ACCESS_TRANSFER_WRITE_BIT, // VkAccessFlags    CurrentAccess
+          VK_ACCESS_UNIFORM_READ_BIT,   // VkAccessFlags    NewAccess
+          VK_QUEUE_FAMILY_IGNORED,      // uint32_t         CurrentQueueFamily
+          VK_QUEUE_FAMILY_IGNORED       // uint32_t         NewQueueFamily
+        };
+        SetBufferMemoryBarrier( command_buffer[0], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT, { post_transfer_transition } );
+      }
     }
 
     if( PresentQueue.FamilyIndex != GraphicsQueue.FamilyIndex ) {
@@ -137,25 +154,29 @@ virtual bool Draw() override {
     }
 
     // Drawing
-    BeginRenderPass( command_buffer[0], vess->getRenderPass(), framebuffer, { { 0, 0 }, Swapchain.Size }, { { 0.6f, 0.2f, 0.3f, 1.0f }, { 1.0f, 0 } }, VK_SUBPASS_CONTENTS_INLINE );
+    BeginRenderPass( command_buffer[0], vess[0]->getRenderPass(), framebuffer, { { 0, 0 }, Swapchain.Size }, { { 0.4f, 0.4f, 0.3f, 1.0f }, { 1.0f, 0 } }, VK_SUBPASS_CONTENTS_INLINE );
 
     
 
     //BeginRenderPass( command_buffer[0], *RenderPass, framebuffer, { { 0, 0 }, Swapchain.Size }, { { 0.1f, 0.2f, 0.3f, 1.0f }, { 1.0f, 0 } }, VK_SUBPASS_CONTENTS_INLINE );
 
-    BindPipelineObject( command_buffer[0], VK_PIPELINE_BIND_POINT_GRAPHICS, vess->getGraphicsPipeline() );
+    BindPipelineObject( command_buffer[0], VK_PIPELINE_BIND_POINT_GRAPHICS, vess[0]->getGraphicsPipeline() );
     
-    BindVertexBuffers( command_buffer[0], 0, { { vess->getVertexBuffer(), 0 } } );
+    for(int i = 0; i < 1; i++)
+    {
 
-    BindDescriptorSets( command_buffer[0], VK_PIPELINE_BIND_POINT_GRAPHICS, vess->getPipelineLayout(), 0, vess->getDescriptorSet(), {} );
+      BindVertexBuffers( command_buffer[0], 0, { { vess[i]->getVertexBuffer(), 0 } } );
+
+      BindDescriptorSets( command_buffer[0], VK_PIPELINE_BIND_POINT_GRAPHICS, vess[i]->getPipelineLayout(), 0, vess[i]->getDescriptorSet(), {} );
 
 
-    BindPipelineObject( command_buffer[0], VK_PIPELINE_BIND_POINT_GRAPHICS, vess->getGraphicsPipeline() );
+      BindPipelineObject( command_buffer[0], VK_PIPELINE_BIND_POINT_GRAPHICS, vess[i]->getGraphicsPipeline() );
 
-    for( size_t i = 0; i < vess->getMesh().Parts.size(); ++i ) {
-      DrawGeometry( command_buffer[0], vess->getMesh().Parts[i].VertexCount, 1, vess->getMesh().Parts[i].VertexOffset, 0 );
+      for( size_t ii = 0; ii < vess[i]->getMesh().Parts.size(); ++ii ) {
+        
+        DrawGeometry( command_buffer[0], vess[i]->getMesh().Parts.at(0).VertexCount, 1, 0, 0 );
+      }
     }
-
 
     BindPipelineObject( command_buffer[0], VK_PIPELINE_BIND_POINT_GRAPHICS, aas->getGraphicsPipeline() );
 
@@ -193,7 +214,7 @@ virtual bool Draw() override {
   };
 
   return IncreasePerformanceThroughIncreasingTheNumberOfSeparatelyRenderedFrames( *LogicalDevice, GraphicsQueue.Handle, PresentQueue.Handle,
-    *Swapchain.Handle, Swapchain.Size, Swapchain.ImageViewsRaw, vess->getRenderPass(), {}, prepare_frame, FramesResources );
+    *Swapchain.Handle, Swapchain.Size, Swapchain.ImageViewsRaw, vess[0]->getRenderPass(), {}, prepare_frame, FramesResources );
 }
 
 
