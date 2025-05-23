@@ -395,7 +395,7 @@ class vessel
         
             Matrix4x4 rotationMatrix = PrepareRotationMatrix( vertical_angle, { 1.0f, 0.0f, 0.0f } ) * PrepareRotationMatrix( horizontal_angle, { 0.0f, -1.0f, 0.0f } );
 
-            Matrix4x4 translationMatrix = PrepareTranslationMatrix(0.0f, 0.0f, -90.0f);
+            Matrix4x4 translationMatrix = PrepareTranslationMatrix(0.0f, 0.0f, -30.0f);
 
             Matrix4x4 model_view_matrix = translationMatrix * rotationMatrix;
     

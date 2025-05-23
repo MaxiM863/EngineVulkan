@@ -164,7 +164,7 @@ virtual bool Draw() override {
 
     BindPipelineObject( command_buffer[0], VK_PIPELINE_BIND_POINT_GRAPHICS, vess[0]->getGraphicsPipeline() );
     
-    for(int i = 0; i < 1; i++)
+    for(int i = 0; i < Models.size(); i++)
     {
 
       BindVertexBuffers( command_buffer[0], 0, { { vess[i]->getVertexBuffer(), 0 } } );

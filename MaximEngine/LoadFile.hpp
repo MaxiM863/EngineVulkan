@@ -153,7 +153,16 @@ class Load {
                         meshName = true;
                     }
                 }
-                else meshName = false;
+                else
+                {
+                    meshName = false;
+
+                    if(line.substr(0, 3) == "GUN")
+                    {
+                        
+                        break;
+                    }
+                } 
             }     
         }
 
