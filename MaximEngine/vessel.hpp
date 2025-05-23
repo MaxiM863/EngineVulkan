@@ -111,7 +111,7 @@ class vessel
             return false;
         }
     
-        if( !UpdateStagingBuffer( true, LogicalDevice, StagingBufferMemory.Object.Handle, static_cast<float>(Swapchain.Size.width) / static_cast<float>(Swapchain.Size.height) ) ) {
+        if( !UpdateStagingBuffer( true, LogicalDevice, static_cast<float>(Swapchain.Size.width) / static_cast<float>(Swapchain.Size.height), 0.0f, 0.0f) ) {
             return false;
         }
     
@@ -388,29 +388,30 @@ class vessel
         return true;
         }
 
-        bool UpdateStagingBuffer( bool force, VkDevice LogicalDevice, VkDeviceMemory& StagingBufferMemory, float ratio ) {
+        bool UpdateStagingBuffer( bool force, VkDevice LogicalDevice, float ratio, float vertical_angle, float horizontal_angle) {
+    
             UpdateUniformBuffer = true;
-            static float horizontal_angle = 90.0f;
-            static float vertical_angle = 90.0f;
-            if( force ) {
-                      
-              Matrix4x4 rotation_matrix = PrepareRotationMatrix( vertical_angle, { 1.0f, 0.0f, 0.0f } ) * PrepareRotationMatrix( horizontal_angle, { 0.0f, -1.0f, 0.0f } );
-              Matrix4x4 translation_matrix = PrepareTranslationMatrix( 0.0f, 0.0f, -50.0f );
-              Matrix4x4 model_view_matrix = translation_matrix * rotation_matrix;
+            
         
-              if( !MapUpdateAndUnmapHostVisibleMemory( LogicalDevice, StagingBufferMemory, 0, sizeof( model_view_matrix[0] ) * model_view_matrix.size(), &model_view_matrix[0], true, nullptr ) ) {
-                return false;
-              }
-        
-              Matrix4x4 perspective_matrix = PreparePerspectiveProjectionMatrix( ratio, 50.0f, 0.01f, 1000.0f );
-        
-              if( !MapUpdateAndUnmapHostVisibleMemory( LogicalDevice, StagingBufferMemory, sizeof( model_view_matrix[0] ) * model_view_matrix.size(),
-                sizeof( perspective_matrix[0] ) * perspective_matrix.size(), &perspective_matrix[0], true, nullptr ) ) {
-                return false;
-              }
+            Matrix4x4 model_view_matrix = PrepareRotationMatrix( vertical_angle, { 1.0f, 0.0f, 0.0f } ) * PrepareRotationMatrix( horizontal_angle, { 0.0f, -1.0f, 0.0f } );
+
+            Matrix4x4 translationMatrix = PrepareTranslationMatrix(0.0f, 0.0f, -50.0f);
+
+            model_view_matrix = translationMatrix * model_view_matrix;
+    
+            if( !MapUpdateAndUnmapHostVisibleMemory( LogicalDevice, *StagingBufferMemory, 0, sizeof( model_view_matrix[0] ) * model_view_matrix.size(), &model_view_matrix[0], true, nullptr ) ) {
+            return false;
             }
+    
+            Matrix4x4 perspective_matrix = PreparePerspectiveProjectionMatrix( ratio, 90.0f, 1.0f, 150.0f );
+    
+            if( !MapUpdateAndUnmapHostVisibleMemory( LogicalDevice, *StagingBufferMemory, sizeof( model_view_matrix[0] ) * model_view_matrix.size(),
+            sizeof( perspective_matrix[0] ) * perspective_matrix.size(), &perspective_matrix[0], true, nullptr ) ) {
+            return false;
+            }
+
             return true;
-          }
+        }       
     };
 
 #endif

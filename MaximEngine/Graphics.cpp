@@ -10,6 +10,8 @@ class Graphics : public VulkanCookbook::VulkanCookbookSample
   vessel** vess;
   std::vector<Mesh> Models;
 
+  bool UpdateUniformBuffer;
+
 public:
 
   HWND* hWnd;
@@ -105,7 +107,7 @@ virtual bool Draw() override {
 
     ///////////////////////////////////////////////////////
 
-    if( true ) {
+    if( UpdateUniformBuffer ) {
       
       for(int i = 0 ; i < Models.size(); i++)
       {
@@ -232,7 +234,30 @@ virtual bool Draw() override {
 
 private:
 
-    
+  void OnMouseEvent() {
+
+    static float horizontal_angle = 0.0f;
+    static float vertical_angle = 0.0f;
+
+    if( MouseState.Buttons[0].IsPressed)
+    {
+      
+      horizontal_angle += 0.5f * MouseState.Position.Delta.X;
+      vertical_angle -= 0.5f * MouseState.Position.Delta.Y;
+
+      if( vertical_angle > 90.0f ) {
+        vertical_angle = 90.0f;
+      }
+
+      if( vertical_angle < -90.0f ) {
+        vertical_angle = -90.0f;
+      }
+
+      for(int i = 0; i < Models.size(); i++) vess[i]->UpdateStagingBuffer( false, LogicalDevice.Object.Handle, static_cast<float>(Swapchain.Size.width) / static_cast<float>(Swapchain.Size.height), vertical_angle, horizontal_angle);
+    }
+  }
+
+  
 
     bool Resize()
     {

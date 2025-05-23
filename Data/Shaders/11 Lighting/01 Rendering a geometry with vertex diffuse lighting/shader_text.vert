@@ -17,9 +17,9 @@ void main() {
   vec4 position = ModelViewMatrix * app_position;
   gl_Position = ProjectionMatrix * position;
 
-  vec4 norm = app_norm;
+  vec4 norm = app_norm * ModelViewMatrix;
   
-  vert_position = position.xyz;
+  vert_position = (app_position * ModelViewMatrix).xyz;
   vert_normal = norm.xyz;
   vert_texcoord = app_texcoord;
 }
