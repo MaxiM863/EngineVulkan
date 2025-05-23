@@ -95,7 +95,7 @@ class vessel
     
         // Staging buffer
         InitVkDestroyer( LogicalDevice, StagingBuffer );
-        if( !CreateBuffer( LogicalDevice, 2 * 16 * sizeof(float), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, *StagingBuffer ) ) {
+        if( !CreateBuffer( LogicalDevice, 3 * 16 * sizeof(float), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, *StagingBuffer ) ) {
             return false;
         }
         InitVkDestroyer( LogicalDevice, StagingBufferMemory );
@@ -106,7 +106,7 @@ class vessel
         // Uniform buffer
         InitVkDestroyer( LogicalDevice, UniformBuffer );
         InitVkDestroyer( LogicalDevice, UniformBufferMemory );
-        if( !CreateUniformBuffer( PhysicalDevice, LogicalDevice, 2 * 16 * sizeof( float ), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+        if( !CreateUniformBuffer( PhysicalDevice, LogicalDevice, 3 * 16 * sizeof( float ), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
             *UniformBuffer, *UniformBufferMemory ) ) {
             return false;
         }
@@ -393,20 +393,25 @@ class vessel
             UpdateUniformBuffer = true;
             
         
-            Matrix4x4 model_view_matrix = PrepareRotationMatrix( vertical_angle, { 1.0f, 0.0f, 0.0f } ) * PrepareRotationMatrix( horizontal_angle, { 0.0f, -1.0f, 0.0f } );
+            Matrix4x4 rotationMatrix = PrepareRotationMatrix( vertical_angle, { 1.0f, 0.0f, 0.0f } ) * PrepareRotationMatrix( horizontal_angle, { 0.0f, -1.0f, 0.0f } );
 
-            Matrix4x4 translationMatrix = PrepareTranslationMatrix(0.0f, 0.0f, -50.0f);
+            Matrix4x4 translationMatrix = PrepareTranslationMatrix(0.0f, 0.0f, -90.0f);
 
-            model_view_matrix = translationMatrix * model_view_matrix;
+            Matrix4x4 model_view_matrix = translationMatrix * rotationMatrix;
     
             if( !MapUpdateAndUnmapHostVisibleMemory( LogicalDevice, *StagingBufferMemory, 0, sizeof( model_view_matrix[0] ) * model_view_matrix.size(), &model_view_matrix[0], true, nullptr ) ) {
             return false;
             }
     
-            Matrix4x4 perspective_matrix = PreparePerspectiveProjectionMatrix( ratio, 90.0f, 1.0f, 150.0f );
+            Matrix4x4 perspective_matrix = PreparePerspectiveProjectionMatrix( ratio, 90.0f, 1.0f, 100.0f );
     
             if( !MapUpdateAndUnmapHostVisibleMemory( LogicalDevice, *StagingBufferMemory, sizeof( model_view_matrix[0] ) * model_view_matrix.size(),
             sizeof( perspective_matrix[0] ) * perspective_matrix.size(), &perspective_matrix[0], true, nullptr ) ) {
+            return false;
+            }
+
+            if( !MapUpdateAndUnmapHostVisibleMemory( LogicalDevice, *StagingBufferMemory, 2 * sizeof( model_view_matrix[0] ) * model_view_matrix.size(),
+            sizeof( perspective_matrix[0] ) * perspective_matrix.size(), &rotationMatrix[0], true, nullptr ) ) {
             return false;
             }
 

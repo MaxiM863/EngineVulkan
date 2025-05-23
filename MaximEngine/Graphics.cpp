@@ -125,7 +125,7 @@ virtual bool Draw() override {
           {
             0,                        // VkDeviceSize     srcOffset
             0,                        // VkDeviceSize     dstOffset
-            2 * 16 * sizeof( float )  // VkDeviceSize     size
+            3 * 16 * sizeof( float )  // VkDeviceSize     size
           }
         };
         CopyDataBetweenBuffers( command_buffer[0], vess[i]->getStagingBuffer(), vess[i]->getUniformBuffer(), regions );

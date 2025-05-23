@@ -13,7 +13,7 @@ void main() {
   vec4 ambient = vec4(0.1, 0.0, 0.0, 1.0);
   vec4 lightColor = vec4( 1.0f, 1.0f, 1.0f, 1.0f);
 
-  vec3 lightPosition = vec3( 1.0f, 1.0f, -100.0f );
+  vec3 lightPosition = vec3( 1.0f, 1.0f, 100.0f );
   vec3 lightDirection = normalize(lightPosition - vert_position);
 
   vec4 diffuse = clamp( dot( lightDirection, vert_normal ), 0, 1) * lightColor + ambient;

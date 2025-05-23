@@ -7,6 +7,7 @@ layout( location = 2 ) in vec2 app_texcoord;
 layout( set = 0, binding = 0 ) uniform UniformBuffer {
   mat4 ModelViewMatrix;
   mat4 ProjectionMatrix;
+  mat4 RotationMatrix;
 };
 
 layout( location = 0 ) out vec3 vert_position;
@@ -17,9 +18,9 @@ void main() {
   vec4 position = ModelViewMatrix * app_position;
   gl_Position = ProjectionMatrix * position;
 
-  vec4 norm = app_norm * ModelViewMatrix;
+  vec4 norm =  RotationMatrix * app_norm;
   
-  vert_position = (app_position * ModelViewMatrix).xyz;
+  vert_position = position.xyz;
   vert_normal = norm.xyz;
   vert_texcoord = app_texcoord;
 }
