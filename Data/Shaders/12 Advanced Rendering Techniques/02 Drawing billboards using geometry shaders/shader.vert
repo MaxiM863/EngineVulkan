@@ -8,5 +8,5 @@ layout( set = 0, binding = 0 ) uniform UniformBuffer {
 };
 
 void main() {
-  gl_Position = ModelViewMatrix * app_position;
+  gl_Position = app_position;
 }

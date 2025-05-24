@@ -145,6 +145,9 @@ namespace VulkanCookbook {
       bool loop = true;
 
       while( loop ) {
+
+        
+
         if( PeekMessage( &message, NULL, 0, 0, PM_REMOVE ) ) {
           switch( message.message ) {
           case USER_MESSAGE_MOUSE_CLICK:

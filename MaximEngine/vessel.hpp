@@ -35,6 +35,8 @@ class vessel
   
   Mesh                                Model;
 
+  float*    GunPos;
+
   OrbitingCamera Camera;
 
   public: Mesh getMesh() {return Model;}
@@ -42,8 +44,12 @@ class vessel
   bool UpdateUniformBuffer;
 
     public:
+
+        Matrix4x4 translationMatrix;
     
         vessel(){};   
+
+        Matrix4x4 getGunPos(){ return translationMatrix; };
     
         VkPipelineLayout getPipelineLayout() { return PipelineLayout.Object.Handle; };
 
@@ -63,8 +69,11 @@ class vessel
 
         VkRenderPass getRenderPass() { return RenderPass.Object.Handle; };
     
-        bool Initialize(VkDevice LogicalDevice, VkPhysicalDevice PhysicalDevice, QueueParameters& GraphicsQueue, VkCommandBuffer& CommandBuffer, SwapchainParameters& Swapchain, Mesh m)
+        bool Initialize(VkDevice LogicalDevice, VkPhysicalDevice PhysicalDevice, QueueParameters& GraphicsQueue, VkCommandBuffer& CommandBuffer, SwapchainParameters& Swapchain, Mesh m, OrbitingCamera Camera)
         {
+
+
+            
             uint32_t stride = 32;
         
             // Vertex data
@@ -111,7 +120,7 @@ class vessel
             return false;
         }
     
-        if( !UpdateStagingBuffer( true, LogicalDevice, static_cast<float>(Swapchain.Size.width) / static_cast<float>(Swapchain.Size.height), 0.0f, 0.0f) ) {
+        if( !UpdateStagingBuffer( true, LogicalDevice, static_cast<float>(Swapchain.Size.width) / static_cast<float>(Swapchain.Size.height), 0.0f, 0.0f, Camera) ) {
             return false;
         }
     
@@ -388,22 +397,22 @@ class vessel
         return true;
         }
 
-        bool UpdateStagingBuffer( bool force, VkDevice LogicalDevice, float ratio, float vertical_angle, float horizontal_angle) {
+        bool UpdateStagingBuffer( bool force, VkDevice LogicalDevice, float ratio, float vertical_angle, float horizontal_angle, OrbitingCamera Camera) {
     
             UpdateUniformBuffer = true;
             
         
             Matrix4x4 rotationMatrix = PrepareRotationMatrix( vertical_angle, { 1.0f, 0.0f, 0.0f } ) * PrepareRotationMatrix( horizontal_angle, { 0.0f, -1.0f, 0.0f } );
 
-            Matrix4x4 translationMatrix = PrepareTranslationMatrix(0.0f, 0.0f, -30.0f);
+            translationMatrix = rotationMatrix;
 
-            Matrix4x4 model_view_matrix = translationMatrix * rotationMatrix;
+            Matrix4x4 model_view_matrix = Camera.GetMatrix() * PrepareTranslationMatrix(0.0f, 0.0f, -10.0f) * translationMatrix;
     
             if( !MapUpdateAndUnmapHostVisibleMemory( LogicalDevice, *StagingBufferMemory, 0, sizeof( model_view_matrix[0] ) * model_view_matrix.size(), &model_view_matrix[0], true, nullptr ) ) {
             return false;
             }
     
-            Matrix4x4 perspective_matrix = PreparePerspectiveProjectionMatrix( ratio, 90.0f, 1.0f, 100.0f );
+            Matrix4x4 perspective_matrix = PreparePerspectiveProjectionMatrix( ratio, 50.0f, 0.5f, 1000.0f );
     
             if( !MapUpdateAndUnmapHostVisibleMemory( LogicalDevice, *StagingBufferMemory, sizeof( model_view_matrix[0] ) * model_view_matrix.size(),
             sizeof( perspective_matrix[0] ) * perspective_matrix.size(), &perspective_matrix[0], true, nullptr ) ) {

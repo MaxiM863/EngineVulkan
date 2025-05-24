@@ -1,13 +1,20 @@
 #version 450
 
-layout( location = 0 ) in vec2 geom_texcoord;
+layout( location = 0 ) in vec2 shadow_coords;
+
+layout( set = 0, binding = 1 ) uniform sampler2D ShadowMap;
 
 layout( location = 0 ) out vec4 frag_color;
 
 void main() {
-  float alpha = 1.0 - dot( geom_texcoord, geom_texcoord );
-  if( 0.2 > alpha ) {
+  vec4 color = texture( ShadowMap, shadow_coords );
+  
+  float alpha = color.w;
+  
+  if(alpha < 0.2)
+  {
     discard;
   }
-  frag_color = vec4( alpha );
+
+  frag_color = color;
 }
