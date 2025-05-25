@@ -50,7 +50,7 @@ virtual bool Initialize( WindowParameters window_parameters, HWND hWnd ) overrid
     return false;
   }
 
-  Camera = OrbitingCamera( Vector3{ 0.0f, 0.0f, 0.0f }, 4.0f );
+  Camera = OrbitingCamera( Vector3{ 0.0f, 0.0f, 0.0f }, 50.0f );
 
   vess = new vessel*[Models.size()];
 
@@ -69,9 +69,9 @@ virtual bool Initialize( WindowParameters window_parameters, HWND hWnd ) overrid
   for(int i = 0; i < 20; i++)
   {
 
-    int rx = rand() % 30;
-    int ry = rand() % 30;
-    int rz = rand() % 30;
+    int rx = 15 - rand() % 30;
+      int ry = 15 - rand() % 30;
+      int rz = 15 - rand() % 30;
 
     fumee->randomization.push_back(PrepareRotationMatrix(rx, Vector3{1.0f,0.0f,0.0f}) * PrepareRotationMatrix(ry, Vector3{0.0f,1.0f,0.0f}) * PrepareRotationMatrix(rz, Vector3{0.0f,0.0f,1.0f}));
     fumee->durationTime.push_back(rand()%4);
@@ -85,9 +85,9 @@ virtual bool Initialize( WindowParameters window_parameters, HWND hWnd ) overrid
   for(int i = 0; i < 20; i++)
   {
 
-    int rx = rand() % 30;
-    int ry = rand() % 30;
-    int rz = rand() % 30;
+    int rx = 15 - rand() % 30;
+      int ry = 15 - rand() % 30;
+      int rz = 15 - rand() % 30;
 
     fumee2->randomization.push_back(PrepareRotationMatrix(rx, Vector3{1.0f,0.0f,0.0f}) * PrepareRotationMatrix(ry, Vector3{0.0f,1.0f,0.0f}) * PrepareRotationMatrix(rz, Vector3{0.0f,0.0f,1.0f}));
     fumee2->durationTime.push_back(rand()%15);
@@ -185,9 +185,9 @@ virtual bool Draw() override {
 
     if(fumee->Bilboards.Parts[0].VertexCount < 20 && rand() % 20 == 0)
     {
-      int rx = rand() % 30;
-      int ry = rand() % 30;
-      int rz = rand() % 30;
+      int rx = 15 - rand() % 30;
+      int ry = 15 - rand() % 30;
+      int rz = 15 - rand() % 30;
 
       fumee->randomization.push_back(PrepareRotationMatrix(rx, Vector3{1.0f,0.0f,0.0f}) * PrepareRotationMatrix(ry, Vector3{0.0f,1.0f,0.0f}) * PrepareRotationMatrix(rz, Vector3{0.0f,0.0f,1.0f}));
       fumee->durationTime.push_back(2);
@@ -260,9 +260,9 @@ virtual bool Draw() override {
 
     if(fumee2->Bilboards.Parts[0].VertexCount < 20 && rand() % 20 == 0)
     {
-      int rx = rand() % 30;
-      int ry = rand() % 30;
-      int rz = rand() % 30;
+      int rx = 15 - rand() % 30;
+      int ry = 15 - rand() % 30;
+      int rz = 15 - rand() % 30;
 
       fumee2->randomization.push_back(PrepareRotationMatrix(rx, Vector3{1.0f,0.0f,0.0f}) * PrepareRotationMatrix(ry, Vector3{0.0f,1.0f,0.0f}) * PrepareRotationMatrix(rz, Vector3{0.0f,0.0f,1.0f}));
       fumee2->durationTime.push_back(rand() % 15);
