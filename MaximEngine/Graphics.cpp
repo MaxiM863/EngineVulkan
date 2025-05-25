@@ -16,6 +16,8 @@ class Graphics : public VulkanCookbook::VulkanCookbookSample
 
   bool UpdateUniformBuffer;
 
+  std::vector<ALuint> playlist;
+
 public:
 
   HWND* hWnd;
@@ -31,35 +33,46 @@ public:
     format = AL_FORMAT_MONO16; // Example format
     freq = 44100; // Example frequency
     return buffer;
-}
-ALuint buffer, source;
-ALCdevice* device = alcOpenDevice(nullptr);
-ALCcontext* context = alcCreateContext(device, nullptr);
+  }
+  ALuint* buffer;
+  ALuint* source;
+  ALCdevice* device = alcOpenDevice(nullptr);
+  ALCcontext* context = alcCreateContext(device, nullptr);
 
-~Graphics() {
+  ALfloat* state = new float;
+        
 
-  alDeleteSources(1, &source);
-  alDeleteBuffers(1, &buffer);
-  alcDestroyContext(context);
-  alcCloseDevice(device);
-}
+  ~Graphics() {
+
+    alDeleteSources(20, &source[0]);
+    alDeleteBuffers(1, &buffer[0]);
+    alcDestroyContext(context);
+    alcCloseDevice(device);
+  }
 
 virtual bool Initialize( WindowParameters window_parameters, HWND hWnd ) override {
 
   
   alcMakeContextCurrent(context);
 
+  source = new ALuint[21];
+  buffer = new ALuint[2];
   
-  alGenBuffers(1, &buffer);
-  alGenSources(1, &source);
+  alGenBuffers(2, buffer);
+  alGenSources(21, source);
 
   ALenum format;
   ALsizei freq;
-  auto data = loadWAV("Data/Sounds/test.wav", format, freq);
-  alBufferData(buffer, format, data.data(), data.size(), freq);
+  auto data = loadWAV("Data/Sounds/engineRockets.wav", format, freq);
+  alBufferData(buffer[0], format, data.data(), data.size(), freq);
 
-  alSourcei(source, AL_BUFFER, buffer);
-  alSourcePlay(source);
+  auto data2 = loadWAV("Data/Sounds/test.wav", format, freq);
+  alBufferData(buffer[1], format, data2.data(), data2.size(), freq);
+
+  alSourcei(source[20], AL_BUFFER, buffer[1]);
+  alSourcePlay(source[20]);
+  
+  *state = 0.6f;
   
   if( !InitializeVulkan( window_parameters, nullptr, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, false ) ) {
 
@@ -107,7 +120,7 @@ virtual bool Initialize( WindowParameters window_parameters, HWND hWnd ) overrid
       int rz = 15 - rand() % 30;
 
     fumee->randomization.push_back(PrepareRotationMatrix(rx, Vector3{1.0f,0.0f,0.0f}) * PrepareRotationMatrix(ry, Vector3{0.0f,1.0f,0.0f}) * PrepareRotationMatrix(rz, Vector3{0.0f,0.0f,1.0f}));
-    fumee->durationTime.push_back(rand()%4);
+    fumee->durationTime.push_back(rand()%10);
     fumee->deltaTime.push_back(0.0f);    
   }
 
@@ -123,7 +136,7 @@ virtual bool Initialize( WindowParameters window_parameters, HWND hWnd ) overrid
       int rz = 15 - rand() % 30;
 
     fumee2->randomization.push_back(PrepareRotationMatrix(rx, Vector3{1.0f,0.0f,0.0f}) * PrepareRotationMatrix(ry, Vector3{0.0f,1.0f,0.0f}) * PrepareRotationMatrix(rz, Vector3{0.0f,0.0f,1.0f}));
-    fumee2->durationTime.push_back(rand()%15);
+    fumee2->durationTime.push_back(rand()%20);
     fumee2->deltaTime.push_back(0.0f);    
   }
 
@@ -223,16 +236,17 @@ virtual bool Draw() override {
       int rz = 15 - rand() % 30;
 
       fumee->randomization.push_back(PrepareRotationMatrix(rx, Vector3{1.0f,0.0f,0.0f}) * PrepareRotationMatrix(ry, Vector3{0.0f,1.0f,0.0f}) * PrepareRotationMatrix(rz, Vector3{0.0f,0.0f,1.0f}));
-      fumee->durationTime.push_back(2);
+      fumee->durationTime.push_back(rand()%10);
       fumee->deltaTime.push_back(0.0f);
 
       fumee->Bilboards.Data.push_back(0.0f);
       fumee->Bilboards.Data.push_back(1.1f);
       fumee->Bilboards.Data.push_back(2.5f);
 
-      fumee->Bilboards.Parts[0].VertexCount++;
+      fumee->Bilboards.Parts[0].VertexCount++;     
     }
 
+    
     for(int i  = 0; i < fumee->Bilboards.Parts[0].VertexCount; i++)
     {
       
@@ -248,6 +262,9 @@ virtual bool Draw() override {
         fumee->Bilboards.Data.erase(fumee->Bilboards.Data.begin()+3*i);
 
         fumee->Bilboards.Parts[0].VertexCount--;
+        
+        alSourcei(source[i], AL_BUFFER, buffer[0]);
+        alSourcePlay(source[i]); 
       }
       else
       {
@@ -259,6 +276,8 @@ virtual bool Draw() override {
         fumee->Bilboards.Data[3*i+0] = asd[0];
         fumee->Bilboards.Data[3*i+1] = asd[1];
         fumee->Bilboards.Data[3*i+2] = asd[2];
+
+        
       }
     }
 
@@ -298,7 +317,7 @@ virtual bool Draw() override {
       int rz = 15 - rand() % 30;
 
       fumee2->randomization.push_back(PrepareRotationMatrix(rx, Vector3{1.0f,0.0f,0.0f}) * PrepareRotationMatrix(ry, Vector3{0.0f,1.0f,0.0f}) * PrepareRotationMatrix(rz, Vector3{0.0f,0.0f,1.0f}));
-      fumee2->durationTime.push_back(rand() % 15);
+      fumee2->durationTime.push_back(rand() % 20);
       fumee2->deltaTime.push_back(0.0f);
 
       fumee2->Bilboards.Data.push_back(0.0f);
