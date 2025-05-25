@@ -17,7 +17,15 @@ target_sources(EngineMaxim PRIVATE
 "../Samples/Common_Files/OrbitingCamera.cpp")
 
 
+include(FetchContent)
 
+FetchContent_Declare(
+    OpenAL-lib
+    GIT_REPOSITORY https://github.com/kcat/openal-soft.git
+    GIT_TAG makemhr        
+)
+
+FetchContent_MakeAvailable(OpenAL-lib)
 
 include(FetchContent)
 
@@ -34,12 +42,17 @@ FetchContent_MakeAvailable(glm)
 if(WIN32)
     
     add_definitions(-DVK_USE_PLATFORM_WIN32_KHR)
-    target_link_libraries(EngineMaxim PUBLIC Cookbook)
+    target_link_libraries(EngineMaxim PUBLIC Cookbook OpenAL::OpenAL)
 
     add_custom_command(TARGET ${PROJECT_NAME}  POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
                 ${CMAKE_CURRENT_SOURCE_DIR}/Data
                 ${CMAKE_CURRENT_BINARY_DIR}/Debug/Data)
+
+    add_custom_command(TARGET ${PROJECT_NAME}  POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy
+            ${CMAKE_CURRENT_BINARY_DIR}/_deps/openal-lib-build/Debug/OpenAL32.dll
+            ${CMAKE_CURRENT_BINARY_DIR}/Debug/OpenAL32.dll)
 
 endif(WIN32)
 

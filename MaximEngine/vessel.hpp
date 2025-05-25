@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <fstream>
+
 #include "CookbookSampleFramework.h"
 #include "OrbitingCamera.h"
 #include "LoadFile.hpp"
@@ -72,7 +73,7 @@ class vessel
         bool Initialize(VkDevice LogicalDevice, VkPhysicalDevice PhysicalDevice, QueueParameters& GraphicsQueue, VkCommandBuffer& CommandBuffer, SwapchainParameters& Swapchain, Mesh m, OrbitingCamera Camera)
         {
 
-
+            
             
             uint32_t stride = 32;
         

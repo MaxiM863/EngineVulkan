@@ -24,9 +24,43 @@ public:
 
   Matrix4x4 additiveRotation;
 
+  std::vector<char> loadWAV(const std::string& filename, ALenum& format, ALsizei& freq) {
+    // Simplified WAV loading logic (use a library like dr_wav for production)
+    std::ifstream file(filename, std::ios::binary);
+    std::vector<char> buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    format = AL_FORMAT_MONO16; // Example format
+    freq = 44100; // Example frequency
+    return buffer;
+}
+ALuint buffer, source;
+ALCdevice* device = alcOpenDevice(nullptr);
+ALCcontext* context = alcCreateContext(device, nullptr);
+
+~Graphics() {
+
+  alDeleteSources(1, &source);
+  alDeleteBuffers(1, &buffer);
+  alcDestroyContext(context);
+  alcCloseDevice(device);
+}
 
 virtual bool Initialize( WindowParameters window_parameters, HWND hWnd ) override {
 
+  
+  alcMakeContextCurrent(context);
+
+  
+  alGenBuffers(1, &buffer);
+  alGenSources(1, &source);
+
+  ALenum format;
+  ALsizei freq;
+  auto data = loadWAV("Data/Sounds/test.wav", format, freq);
+  alBufferData(buffer, format, data.data(), data.size(), freq);
+
+  alSourcei(source, AL_BUFFER, buffer);
+  alSourcePlay(source);
+  
   if( !InitializeVulkan( window_parameters, nullptr, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, false ) ) {
 
     return false;
@@ -36,7 +70,6 @@ virtual bool Initialize( WindowParameters window_parameters, HWND hWnd ) overrid
   float pos_x1 = 0.15f;
   float pos_y0 = 0.80f;
   float pos_y1 = 0.86f;
-
   
   aas = new sdlTextEngine();
 

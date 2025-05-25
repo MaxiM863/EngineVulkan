@@ -80,7 +80,7 @@ namespace VulkanCookbook {
   }
 
   VulkanCookbookSampleBase::~VulkanCookbookSampleBase() {
-    ReleaseVulkanLoaderLibrary( VulkanLibrary );
+    ReleaseVulkanLoaderLibrary( VulkanLibrary );    
   }
 
   void VulkanCookbookSampleBase::MouseClick( size_t button_index, bool state ) {

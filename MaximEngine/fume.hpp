@@ -57,7 +57,9 @@ class fume
     /*// Vertex data
     if( !Load3DModelFromObjFile( "Data/Models/ice_low.obj", false, false, false, true, Bilboards ) ) {
       return false;
-    }*/    
+    }*/ 
+   
+   
 
     for(int i = 0; i < 20; i++)
     {
