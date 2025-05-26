@@ -67,6 +67,25 @@ namespace VulkanCookbook {
      ~MouseStateParameters();
   };
 
+  class KeyStateParameter {
+    public:
+
+    bool thrust;
+    bool lturn;
+    bool rturn;
+    bool uturn;
+    bool dturn;
+
+    bool fire;
+  };
+
+  class ServerStateParameters {
+    public:
+
+      bool ServerReady;
+      char data[200];
+  };
+
   // Class for simple time manipulations
 
   class TimerStateParameters {
@@ -116,15 +135,22 @@ namespace VulkanCookbook {
     virtual void  MouseWheel( float distance ) final;
     virtual void  MouseReset() final;
     virtual void  UpdateTime() final;
+    virtual void  ServerIn( char* data ) final;
+    virtual void  KeyboardIn( WPARAM key ) final;
+    virtual void  KeyboardOut( WPARAM key ) final;
     virtual bool  IsReady() final;
 
   protected:
     virtual void  OnMouseEvent();
+    virtual void  OnServerEvent();
+    virtual void  OnKeyEvent();
 
     LIBRARY_TYPE          VulkanLibrary;
     bool                  Ready;
     MouseStateParameters  MouseState;
     TimerStateParameters  TimerState;
+    ServerStateParameters ServerState;
+    KeyStateParameter     KeyState;
   };
 
   // Base class for code samples with default instance, device and swapchain creation

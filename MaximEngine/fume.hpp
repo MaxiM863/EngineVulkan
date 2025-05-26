@@ -530,8 +530,9 @@ class fume
 
       UpdateUniformBuffer = true;
 
-      Matrix4x4 translationMatrix = PrepareTranslationMatrix(0.0f, 0.0f, -10.0f);
-      Matrix4x4 model_view_matrix = Camera.GetMatrix() * translationMatrix * GunPos;
+      //Matrix4x4 translationMatrix = PrepareTranslationMatrix(0.0f, 0.0f, -10.0f);
+      
+      Matrix4x4 model_view_matrix = GunPos;
 
       if( !MapUpdateAndUnmapHostVisibleMemory( LogicalDevice, *StagingBufferMemory, 0, sizeof( model_view_matrix[0] ) * model_view_matrix.size(), &model_view_matrix[0], true, nullptr ) ) {
         return false;

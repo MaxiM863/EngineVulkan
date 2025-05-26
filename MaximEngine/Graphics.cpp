@@ -18,7 +18,12 @@ class Graphics : public VulkanCookbook::VulkanCookbookSample
 
   std::vector<ALuint> playlist;
 
+  
+  
 public:
+
+  float horizontal_angle = 0.0f;
+  float vertical_angle = 0.0f;
 
   HWND* hWnd;
 
@@ -138,7 +143,7 @@ virtual bool Initialize( WindowParameters window_parameters, HWND hWnd ) overrid
     fumee2->randomization.push_back(PrepareRotationMatrix(rx, Vector3{1.0f,0.0f,0.0f}) * PrepareRotationMatrix(ry, Vector3{0.0f,1.0f,0.0f}) * PrepareRotationMatrix(rz, Vector3{0.0f,0.0f,1.0f}));
     fumee2->durationTime.push_back(rand()%20);
     fumee2->deltaTime.push_back(0.0f);    
-  }
+  }  
 
   return true;
 }
@@ -468,6 +473,7 @@ virtual bool Draw() override {
     fumee->UpdateStagingBuffer(true, LogicalDevice.Object.Handle, static_cast<float>(Swapchain.Size.width) / static_cast<float>(Swapchain.Size.height), MouseState.Position.Delta.X, MouseState.Position.Delta.Y, additiveRotation , Camera);
     fumee2->UpdateStagingBuffer(true, LogicalDevice.Object.Handle, static_cast<float>(Swapchain.Size.width) / static_cast<float>(Swapchain.Size.height), MouseState.Position.Delta.X, MouseState.Position.Delta.Y, additiveRotation , Camera);
     
+    for(int i = 0; i < Models.size(); i++) vess[i]->UpdateStagingBuffer( false, LogicalDevice.Object.Handle, static_cast<float>(Swapchain.Size.width) / static_cast<float>(Swapchain.Size.height), vertical_angle, horizontal_angle, Camera);
 
     return true;
   };
@@ -493,8 +499,7 @@ private:
 
   void OnMouseEvent() {
 
-    static float horizontal_angle = 0.0f;
-    static float vertical_angle = 0.0f;
+    
 
     if( MouseState.Buttons[0].IsPressed)
     {
@@ -509,11 +514,24 @@ private:
       if( vertical_angle < -90.0f ) {
         vertical_angle = -90.0f;
       }
-
-      for(int i = 0; i < Models.size(); i++) vess[i]->UpdateStagingBuffer( false, LogicalDevice.Object.Handle, static_cast<float>(Swapchain.Size.width) / static_cast<float>(Swapchain.Size.height), vertical_angle, horizontal_angle, Camera);
-
-      
     }
+  }
+
+  void OnKeyEvent() {
+
+    if(KeyState.thrust == true)
+    {
+      for(int i = 0; i < Models.size(); i++) vess[i]->UpdateStagingBufferThrust(true);
+    }
+    else
+    {
+      for(int i = 0; i < Models.size(); i++) vess[i]->UpdateStagingBufferThrust(false);
+    }
+  }
+
+  void OnServerEvent() {
+
+    int a = 0;
   }
 
   

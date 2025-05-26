@@ -38,6 +38,11 @@ class vessel
 
   float*    GunPos;
 
+  bool thrust;
+
+  Matrix4x4 position;
+  Vector3 ppos;
+
   OrbitingCamera Camera;
 
   public: Mesh getMesh() {return Model;}
@@ -72,8 +77,10 @@ class vessel
     
         bool Initialize(VkDevice LogicalDevice, VkPhysicalDevice PhysicalDevice, QueueParameters& GraphicsQueue, VkCommandBuffer& CommandBuffer, SwapchainParameters& Swapchain, Mesh m, OrbitingCamera Camera)
         {
+            thrust = false;
 
-            
+            position = PrepareTranslationMatrix(0.0f,0.0f,-10.0f);
+            ppos = Vector3{0.0f,0.0f,-10.0f};
             
             uint32_t stride = 32;
         
@@ -405,9 +412,17 @@ class vessel
         
             Matrix4x4 rotationMatrix = PrepareRotationMatrix( vertical_angle, { 1.0f, 0.0f, 0.0f } ) * PrepareRotationMatrix( horizontal_angle, { 0.0f, -1.0f, 0.0f } );
 
-            translationMatrix = rotationMatrix;
+            
 
-            Matrix4x4 model_view_matrix = Camera.GetMatrix() * PrepareTranslationMatrix(0.0f, 0.0f, -10.0f) * translationMatrix;
+            if(thrust)
+            {
+                ppos = ppos + Transform(Vector3{0.0f,0.000001f,0.0f}, rotationMatrix);
+                position = PrepareTranslationMatrix(ppos[0], ppos[1], ppos[2]);
+            }            
+
+            Matrix4x4 model_view_matrix = Camera.GetMatrix() * position * rotationMatrix;
+    
+            translationMatrix = model_view_matrix;
     
             if( !MapUpdateAndUnmapHostVisibleMemory( LogicalDevice, *StagingBufferMemory, 0, sizeof( model_view_matrix[0] ) * model_view_matrix.size(), &model_view_matrix[0], true, nullptr ) ) {
             return false;
@@ -426,7 +441,14 @@ class vessel
             }
 
             return true;
-        }       
+        }
+        
+        bool UpdateStagingBufferThrust( bool thrust) {
+    
+            this->thrust = thrust;
+
+            return true;
+        }  
     };
 
 #endif

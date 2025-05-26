@@ -7,6 +7,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 add_subdirectory(Cookbook)
 add_subdirectory(MaximEngine)
+add_subdirectory(Serveur)
+
+include_directories(${CMAKE_SOURCE_DIR}/MaximStar)
 
 add_executable(EngineMaxim main.cpp)
 
@@ -42,7 +45,7 @@ FetchContent_MakeAvailable(glm)
 if(WIN32)
     
     add_definitions(-DVK_USE_PLATFORM_WIN32_KHR)
-    target_link_libraries(EngineMaxim PUBLIC Cookbook OpenAL::OpenAL)
+    target_link_libraries(EngineMaxim PUBLIC Cookbook OpenAL::OpenAL wsock32 ws2_32)
 
     add_custom_command(TARGET ${PROJECT_NAME}  POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory

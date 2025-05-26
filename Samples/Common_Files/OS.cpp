@@ -41,12 +41,16 @@ namespace VulkanCookbook {
       USER_MESSAGE_QUIT,
       USER_MESSAGE_MOUSE_CLICK,
       USER_MESSAGE_MOUSE_MOVE,
-      USER_MESSAGE_MOUSE_WHEEL
+      USER_MESSAGE_MOUSE_WHEEL,
+      USER_MESSAGE_SERVER_ON,
+      USER_MESSAGE_KEY_ON,
+      USER_MESSAGE_KEY_OFF
     };
   }
 
   LRESULT CALLBACK WindowProcedure( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam ) {
     switch( message ) {
+    
     case WM_LBUTTONDOWN:
       PostMessage( hWnd, USER_MESSAGE_MOUSE_CLICK, 0, 1 );
       break;
@@ -70,10 +74,21 @@ namespace VulkanCookbook {
       PostMessage( hWnd, USER_MESSAGE_RESIZE, wParam, lParam );
       break;
     case WM_KEYDOWN:
+    {
       if( VK_ESCAPE == wParam ) {
         PostMessage( hWnd, USER_MESSAGE_QUIT, wParam, lParam );
       }
+      else {
+        PostMessage( hWnd, USER_MESSAGE_KEY_ON, wParam, lParam);
+      }
       break;
+    }
+    case WM_KEYUP:
+    {
+      PostMessage( hWnd, USER_MESSAGE_KEY_OFF, wParam, lParam);
+      
+      break;
+    }
     case WM_CLOSE:
       PostMessage( hWnd, USER_MESSAGE_QUIT, wParam, lParam );
       break;
@@ -144,12 +159,34 @@ namespace VulkanCookbook {
       MSG message;
       bool loop = true;
 
-      while( loop ) {
-
-        
+      while( loop ) {        
 
         if( PeekMessage( &message, NULL, 0, 0, PM_REMOVE ) ) {
           switch( message.message ) {
+
+          case USER_MESSAGE_SERVER_ON:
+          {
+            char* receivedStr = reinterpret_cast<char*>(message.lParam);
+            
+            Sample.ServerIn(receivedStr);
+
+            // Free the allocated memory
+            delete[] receivedStr;
+            
+            break;
+          }
+          case USER_MESSAGE_KEY_ON:
+          {
+            Sample.KeyboardIn(message.wParam);
+
+            break;
+          }
+          case USER_MESSAGE_KEY_OFF:
+          {
+            Sample.KeyboardOut(message.wParam);
+
+            break;
+          }
           case USER_MESSAGE_MOUSE_CLICK:
             Sample.MouseClick( static_cast<size_t>(message.wParam), message.lParam > 0 );
             break;

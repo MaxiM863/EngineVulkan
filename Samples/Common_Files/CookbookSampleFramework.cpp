@@ -122,12 +122,51 @@ namespace VulkanCookbook {
     TimerState.Update();
   }
 
+  void VulkanCookbookSampleBase::ServerIn(char* data)
+  {
+    ServerState.ServerReady = true;
+    
+    memcpy(ServerState.data, data, 200);
+
+    OnServerEvent();
+  }
+
+  void VulkanCookbookSampleBase::KeyboardIn(WPARAM key)
+  {
+    if(key == 17)
+    {
+      KeyState.thrust = true;
+    }
+
+    OnKeyEvent();
+  }
+
+  void VulkanCookbookSampleBase::KeyboardOut(WPARAM key)
+  {
+    if(key == 17)
+    {
+      KeyState.thrust = false;
+    }
+
+    OnKeyEvent();
+  }
+
   bool VulkanCookbookSampleBase::IsReady() {
     return Ready;
   }
 
   void VulkanCookbookSampleBase::OnMouseEvent() {
     // Override this in a derived class to know when a mouse event occured
+  }
+
+  void VulkanCookbookSampleBase::OnServerEvent()
+  {
+    // Override this in a derived class to know when a server event occured
+  }
+
+  void VulkanCookbookSampleBase::OnKeyEvent()
+  {
+    // Override this in a derived class to know when a key event occured
   }
 
   bool VulkanCookbookSample::InitializeVulkan( WindowParameters           window_parameters,

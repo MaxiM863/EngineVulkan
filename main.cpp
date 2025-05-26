@@ -34,6 +34,11 @@
 // Chapter: 11 Lighting
 // Recipe:  02 Rendering a geometry with fragment specular lighting
 
+
+
+#include <WinSock2.h>
+#include <ws2tcpip.h>
+
 #include "CookbookSampleFramework.h"
 #include "Graphics.cpp"
 
