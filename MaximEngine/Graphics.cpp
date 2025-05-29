@@ -84,8 +84,8 @@ virtual bool Initialize( WindowParameters window_parameters, HWND hWnd ) overrid
     return false;
   }
 
-  float pos_x0 = -0.2f;
-  float pos_x1 = 0.2f;
+  float pos_x0 = -0.15f;
+  float pos_x1 = 0.15f;
   float pos_y0 = 0.80f;
   float pos_y1 = 0.86f;
   
