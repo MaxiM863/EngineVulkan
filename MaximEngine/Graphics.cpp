@@ -84,14 +84,14 @@ virtual bool Initialize( WindowParameters window_parameters, HWND hWnd ) overrid
     return false;
   }
 
-  float pos_x0 = -0.15f;
-  float pos_x1 = 0.15f;
+  float pos_x0 = -0.2f;
+  float pos_x1 = 0.2f;
   float pos_y0 = 0.80f;
   float pos_y1 = 0.86f;
   
   aas = new sdlTextEngine();
 
-  aas->Initialize("Hello you !!!", 200, 0x00FF0000, 0x00FFFFFF, pos_x0, pos_x1, pos_y0, pos_y1, 1000, 200, LogicalDevice.Object.Handle, PhysicalDevice, GraphicsQueue, FramesResources.front().CommandBuffer[0], Swapchain);
+  aas->Initialize("ASDW + rCntrl", 150, 0x00FF0000, 0x00FFFFFF, pos_x0, pos_x1, pos_y0, pos_y1, 1000, 200, LogicalDevice.Object.Handle, PhysicalDevice, GraphicsQueue, FramesResources.front().CommandBuffer[0], Swapchain);
 
   Load L;  
   
