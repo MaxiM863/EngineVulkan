@@ -410,13 +410,33 @@ class vessel
             UpdateUniformBuffer = true;
             
         
-            Matrix4x4 rotationMatrix = PrepareRotationMatrix( vertical_angle, { 1.0f, 0.0f, 0.0f } ) * PrepareRotationMatrix( horizontal_angle, { 0.0f, -1.0f, 0.0f } );
+            // Define yaw, pitch, and roll in radians
+            float yaw = glm::radians(vertical_angle);   // Rotation around Y-axis
+            float pitch = glm::radians(horizontal_angle); // Rotation around X-axis
+            //float roll = glm::radians(vertical_angle);  // Rotation around Z-axis
 
+            // Create rotation matrices for each axis
+            glm::mat4 rotationX = glm::rotate(glm::mat4(1.0f), pitch, glm::vec3(1.0f, 0.0f, 0.0f));
+            glm::mat4 rotationY = glm::rotate(glm::mat4(1.0f), yaw, glm::vec3(0.0f, 1.0f, 0.0f));
+            //glm::mat4 rotationZ = glm::rotate(glm::mat4(1.0f), roll, glm::vec3(0.0f, 0.0f, 1.0f));
+
+            // Combine rotations (order matters: Yaw -> Pitch -> Roll)
+            glm::mat4 rota = rotationY * rotationX;
+            
+            Matrix4x4 rot = {
+                             rota[0][0], rota[0][1], rota[0][2], rota[0][3],
+                             rota[1][0], rota[1][1], rota[1][2], rota[1][3],
+                             rota[2][0], rota[2][1], rota[2][2], rota[2][3],
+                             rota[3][0], rota[3][1], rota[3][2], rota[3][3]
+                            };
+
+
+            Matrix4x4 rotationMatrix = rot;
             
 
             if(thrust)
             {
-                ppos = ppos + Transform(Vector3{0.0f,0.000001f,0.0f}, rotationMatrix);
+                ppos = ppos - 0.001f*Transform(Vector3{0.0f,1.0f,0.0f}, rotationMatrix);
                 position = PrepareTranslationMatrix(ppos[0], ppos[1], ppos[2]);
             }            
 
@@ -428,7 +448,7 @@ class vessel
             return false;
             }
     
-            Matrix4x4 perspective_matrix = PreparePerspectiveProjectionMatrix( ratio, 50.0f, 0.5f, 1000.0f );
+            Matrix4x4 perspective_matrix = PreparePerspectiveProjectionMatrix( ratio, 90.0f, 0.5f, 1000.0f );
     
             if( !MapUpdateAndUnmapHostVisibleMemory( LogicalDevice, *StagingBufferMemory, sizeof( model_view_matrix[0] ) * model_view_matrix.size(),
             sizeof( perspective_matrix[0] ) * perspective_matrix.size(), &perspective_matrix[0], true, nullptr ) ) {

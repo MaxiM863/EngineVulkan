@@ -46,6 +46,8 @@ class fume
   std::vector<float> durationTime;
   std::vector<Matrix4x4> randomization;
 
+  std::vector<Matrix4x4> autonomous;
+
   VkBuffer getStagingBuffer2() { return StagingBuffer2.Object.Handle; };
   VkDeviceMemory getStagingBuffMem2() { return StagingBufferMemory2.Object.Handle; };
 
@@ -66,7 +68,12 @@ class fume
         Bilboards.Data.push_back(0.0f);
         Bilboards.Data.push_back(1.1f);
         Bilboards.Data.push_back(0.0f);
+
+        Bilboards.Data.push_back((float)i);
+
+        autonomous.push_back(PrepareTranslationMatrix(0.0f,0.0f,-10.0f));
     }
+
     VulkanCookbook::Mesh::Part P;
 
     P.VertexCount = 20;
@@ -109,7 +116,7 @@ class fume
     }
 
     InitVkDestroyer( LogicalDevice, VertexBuffer );
-    if( !CreateBuffer( LogicalDevice, sizeof( Bilboards.Data[0] ) * 20 * 3,
+    if( !CreateBuffer( LogicalDevice, sizeof( Bilboards.Data[0] ) * Bilboards.Data.size(),
       VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, *VertexBuffer ) ) {
       return false;
     }
@@ -127,7 +134,7 @@ class fume
 
     // Staging buffer
     InitVkDestroyer( LogicalDevice, StagingBuffer );
-    if( !CreateBuffer( LogicalDevice, 2 * 16 * sizeof(float), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, *StagingBuffer ) ) {
+    if( !CreateBuffer( LogicalDevice, 21 * 16 * sizeof(float), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, *StagingBuffer ) ) {
       return false;
     }
     InitVkDestroyer( LogicalDevice, StagingBufferMemory );
@@ -148,7 +155,7 @@ class fume
     // Uniform buffer
     InitVkDestroyer( LogicalDevice, UniformBuffer );
     InitVkDestroyer( LogicalDevice, UniformBufferMemory );
-    if( !CreateUniformBuffer( PhysicalDevice, LogicalDevice, 2 * 16 * sizeof( float ), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+    if( !CreateUniformBuffer( PhysicalDevice, LogicalDevice, 21 * 16 * sizeof( float ), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
       *UniformBuffer, *UniformBufferMemory ) ) {
       return false;
     }
@@ -157,7 +164,7 @@ class fume
 
     
 
-    if( !UpdateStagingBuffer( true, LogicalDevice, static_cast<float>(Swapchain.Size.width) / static_cast<float>(Swapchain.Size.height), 0, 0, GunPos, Camera) ) {
+    if( !UpdateStagingBuffer( true, LogicalDevice, static_cast<float>(Swapchain.Size.width) / static_cast<float>(Swapchain.Size.height), 0, 0, Camera) ) {
       return false;
     }
 
@@ -375,7 +382,7 @@ class fume
     std::vector<VkVertexInputBindingDescription> vertex_input_binding_descriptions = {
       {
         0,                            // uint32_t                     binding
-        3 * sizeof( float ),          // uint32_t                     stride
+        4 * sizeof( float ),          // uint32_t                     stride
         VK_VERTEX_INPUT_RATE_VERTEX   // VkVertexInputRate            inputRate
       }
     };
@@ -386,6 +393,12 @@ class fume
         0,                                                                        // uint32_t   binding
         VK_FORMAT_R32G32B32_SFLOAT,                                               // VkFormat   format
         0                                                                         // uint32_t   offset
+      },
+      {
+        1,                                                                        // uint32_t   location
+        0,                                                                        // uint32_t   binding
+        VK_FORMAT_R32_SFLOAT,                                               // VkFormat   format
+        3 * sizeof(float)                                                                         // uint32_t   offset
       }
     };
 
@@ -491,7 +504,7 @@ class fume
         {
           0,                        // VkDeviceSize     srcOffset
           0,                        // VkDeviceSize     dstOffset
-          2 * 16 * sizeof( float )  // VkDeviceSize     size
+          21 * 16 * sizeof( float )  // VkDeviceSize     size
         }
       };
       CopyDataBetweenBuffers( command_buffer, *StagingBuffer, *UniformBuffer, regions );
@@ -524,28 +537,28 @@ class fume
     return true;
   }
     
-  bool UpdateStagingBuffer( bool force, VkDevice LogicalDevice, float ratio, int DeltaX, int DeltaY, Matrix4x4 GunPos, OrbitingCamera Camera) {
+  bool UpdateStagingBuffer( bool force, VkDevice LogicalDevice, float ratio, int DeltaX, int DeltaY, OrbitingCamera Camera) {
     
     if( true ) {
 
       UpdateUniformBuffer = true;
 
-      //Matrix4x4 translationMatrix = PrepareTranslationMatrix(0.0f, 0.0f, -10.0f);
+      Matrix4x4 translationMatrix = PrepareTranslationMatrix(0.0f, 0.0f, -10.0f);
       
-      Matrix4x4 model_view_matrix = GunPos;
+      Matrix4x4 model_view_matrix = translationMatrix;
 
-      if( !MapUpdateAndUnmapHostVisibleMemory( LogicalDevice, *StagingBufferMemory, 0, sizeof( model_view_matrix[0] ) * model_view_matrix.size(), &model_view_matrix[0], true, nullptr ) ) {
+      if( !MapUpdateAndUnmapHostVisibleMemory( LogicalDevice, *StagingBufferMemory, 0, sizeof( model_view_matrix[0] ) * model_view_matrix.size() * 20, &autonomous[0][0], true, nullptr ) ) {
         return false;
       }
 
-      Matrix4x4 perspective_matrix = PreparePerspectiveProjectionMatrix( ratio, 50.0f, 0.5f, 1000.0f );
+      Matrix4x4 perspective_matrix = PreparePerspectiveProjectionMatrix( ratio, 90.0f, 0.5f, 1000.0f );
 
-      if( !MapUpdateAndUnmapHostVisibleMemory( LogicalDevice, *StagingBufferMemory, sizeof( model_view_matrix[0] ) * model_view_matrix.size(),
+      if( !MapUpdateAndUnmapHostVisibleMemory( LogicalDevice, *StagingBufferMemory, sizeof( model_view_matrix[0] ) * model_view_matrix.size() * 20,
         sizeof( perspective_matrix[0] ) * perspective_matrix.size(), &perspective_matrix[0], true, nullptr ) ) {
         return false;
       }
 
-      if( !MapUpdateAndUnmapHostVisibleMemory( LogicalDevice, *StagingBufferMemory2, 0, sizeof( model_view_matrix[0] ) * 3 * 20, &Bilboards.Data[0], true, nullptr ) ) {
+      if( !MapUpdateAndUnmapHostVisibleMemory( LogicalDevice, *StagingBufferMemory2, 0, sizeof( model_view_matrix[0] ) * 4 * 20, &Bilboards.Data[0], true, nullptr ) ) {
         return false;
       }
     }

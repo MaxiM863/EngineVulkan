@@ -248,6 +248,30 @@ virtual bool Draw() override {
       fumee->Bilboards.Data.push_back(1.1f);
       fumee->Bilboards.Data.push_back(2.5f);
 
+      int missing = 0;
+      for(int i = 0; i < 20; i++)
+      {
+        bool test = false;
+        for(int j = 0 ; j < fumee->Bilboards.Data.size(); j++)
+        {
+          if(fumee->Bilboards.Data[j] == i)
+          {
+            test = true;
+            break;
+          }
+        }
+
+        if(!test)
+        {
+          missing = i;
+          break;
+        }
+      }
+
+      fumee->Bilboards.Data.push_back(missing);
+
+      fumee->autonomous[missing] = vess[0]->translationMatrix;
+
       fumee->Bilboards.Parts[0].VertexCount++;     
     }
 
@@ -262,9 +286,10 @@ virtual bool Draw() override {
         fumee->randomization.erase(fumee->randomization.begin() + i);
         fumee->durationTime.erase(fumee->durationTime.begin() + i);
         fumee->deltaTime.erase(fumee->deltaTime.begin() + i);
-        fumee->Bilboards.Data.erase(fumee->Bilboards.Data.begin()+3*i);
-        fumee->Bilboards.Data.erase(fumee->Bilboards.Data.begin()+3*i);
-        fumee->Bilboards.Data.erase(fumee->Bilboards.Data.begin()+3*i);
+        fumee->Bilboards.Data.erase(fumee->Bilboards.Data.begin()+4*i);
+        fumee->Bilboards.Data.erase(fumee->Bilboards.Data.begin()+4*i);
+        fumee->Bilboards.Data.erase(fumee->Bilboards.Data.begin()+4*i);
+        fumee->Bilboards.Data.erase(fumee->Bilboards.Data.begin()+4*i);
 
         fumee->Bilboards.Parts[0].VertexCount--;
         
@@ -278,11 +303,9 @@ virtual bool Draw() override {
 
         Vector3 asd = tmpPos + Transform(Vector3{0.0f, 0.0f, 0.0f}, fumee->randomization[i] * PrepareTranslationMatrix(0.0f, 2.8f*fumee->deltaTime[i], 0.0f));
 
-        fumee->Bilboards.Data[3*i+0] = asd[0];
-        fumee->Bilboards.Data[3*i+1] = asd[1];
-        fumee->Bilboards.Data[3*i+2] = asd[2];
-
-        
+        fumee->Bilboards.Data[4*i+0] = asd[0];
+        fumee->Bilboards.Data[4*i+1] = asd[1];
+        fumee->Bilboards.Data[4*i+2] = asd[2];       
       }
     }
 
@@ -299,7 +322,7 @@ virtual bool Draw() override {
       {
         0,                        // VkDeviceSize     srcOffset
         0,                        // VkDeviceSize     dstOffset
-        20 * 3 * sizeof( float )  // VkDeviceSize     size
+        20 * 4 * sizeof( float )  // VkDeviceSize     size
       }
     };
     CopyDataBetweenBuffers( command_buffer[0], fumee->getStagingBuffer2(), *fumee->VertexBuffer, regions );
@@ -328,6 +351,30 @@ virtual bool Draw() override {
       fumee2->Bilboards.Data.push_back(0.0f);
       fumee2->Bilboards.Data.push_back(1.1f);
       fumee2->Bilboards.Data.push_back(2.5f);
+      
+      int missing = 0;
+      for(int i = 0; i < 20; i++)
+      {
+        bool test = false;
+        for(int j = 0 ; j < fumee2->Bilboards.Data.size(); j++)
+        {
+          if(fumee2->Bilboards.Data[j] == i)
+          {
+            test = true;
+            break;
+          }
+        }
+
+        if(!test)
+        {
+          missing = i;
+          break;
+        }
+      }
+
+      fumee2->Bilboards.Data.push_back(missing);
+
+      fumee2->autonomous[missing] = vess[0]->translationMatrix;
 
       fumee2->Bilboards.Parts[0].VertexCount++;
     }
@@ -342,9 +389,10 @@ virtual bool Draw() override {
         fumee2->randomization.erase(fumee2->randomization.begin() + i);
         fumee2->durationTime.erase(fumee2->durationTime.begin() + i);
         fumee2->deltaTime.erase(fumee2->deltaTime.begin() + i);
-        fumee2->Bilboards.Data.erase(fumee2->Bilboards.Data.begin()+3*i);
-        fumee2->Bilboards.Data.erase(fumee2->Bilboards.Data.begin()+3*i);
-        fumee2->Bilboards.Data.erase(fumee2->Bilboards.Data.begin()+3*i);
+        fumee2->Bilboards.Data.erase(fumee2->Bilboards.Data.begin()+4*i);
+        fumee2->Bilboards.Data.erase(fumee2->Bilboards.Data.begin()+4*i);
+        fumee2->Bilboards.Data.erase(fumee2->Bilboards.Data.begin()+4*i);
+        fumee2->Bilboards.Data.erase(fumee2->Bilboards.Data.begin()+4*i);
 
         fumee2->Bilboards.Parts[0].VertexCount--;
       }
@@ -355,9 +403,9 @@ virtual bool Draw() override {
 
         Vector3 asd = tmpPos + Transform(Vector3{0.0f, 0.0f, 0.0f}, fumee2->randomization[i] * PrepareTranslationMatrix(0.0f, 2.8f*fumee2->deltaTime[i], 0.0f));
 
-        fumee2->Bilboards.Data[3*i+0] = asd[0];
-        fumee2->Bilboards.Data[3*i+1] = asd[1];
-        fumee2->Bilboards.Data[3*i+2] = asd[2];
+        fumee2->Bilboards.Data[4*i+0] = asd[0];
+        fumee2->Bilboards.Data[4*i+1] = asd[1];
+        fumee2->Bilboards.Data[4*i+2] = asd[2];
       }
     }
 
@@ -374,7 +422,7 @@ virtual bool Draw() override {
       {
         0,                        // VkDeviceSize     srcOffset
         0,                        // VkDeviceSize     dstOffset
-        20 * 3 * sizeof( float )  // VkDeviceSize     size
+        20 * 4 * sizeof( float )  // VkDeviceSize     size
       }
     };
     CopyDataBetweenBuffers( command_buffer[0], fumee2->getStagingBuffer2(), *fumee2->VertexBuffer, regions );
@@ -466,15 +514,14 @@ virtual bool Draw() override {
       return false;
     }
 
-    additiveRotation = vess[0]->translationMatrix;
-
-    
-
-    fumee->UpdateStagingBuffer(true, LogicalDevice.Object.Handle, static_cast<float>(Swapchain.Size.width) / static_cast<float>(Swapchain.Size.height), MouseState.Position.Delta.X, MouseState.Position.Delta.Y, additiveRotation , Camera);
-    fumee2->UpdateStagingBuffer(true, LogicalDevice.Object.Handle, static_cast<float>(Swapchain.Size.width) / static_cast<float>(Swapchain.Size.height), MouseState.Position.Delta.X, MouseState.Position.Delta.Y, additiveRotation , Camera);
-    
     for(int i = 0; i < Models.size(); i++) vess[i]->UpdateStagingBuffer( false, LogicalDevice.Object.Handle, static_cast<float>(Swapchain.Size.width) / static_cast<float>(Swapchain.Size.height), vertical_angle, horizontal_angle, Camera);
 
+    
+
+    
+    fumee->UpdateStagingBuffer(true, LogicalDevice.Object.Handle, static_cast<float>(Swapchain.Size.width) / static_cast<float>(Swapchain.Size.height), MouseState.Position.Delta.X, MouseState.Position.Delta.Y, Camera);
+    fumee2->UpdateStagingBuffer(true, LogicalDevice.Object.Handle, static_cast<float>(Swapchain.Size.width) / static_cast<float>(Swapchain.Size.height), MouseState.Position.Delta.X, MouseState.Position.Delta.Y, Camera);
+    
     return true;
   };
 
@@ -503,17 +550,22 @@ private:
 
     if( MouseState.Buttons[0].IsPressed)
     {
+      float horizontal_angle = 0.0f;
+      float vertical_angle = 0.0f;
       
       horizontal_angle += 0.5f * MouseState.Position.Delta.X;
       vertical_angle -= 0.5f * MouseState.Position.Delta.Y;
 
-      if( vertical_angle > 90.0f ) {
-        vertical_angle = 90.0f;
+      if( vertical_angle > 180.0f ) {
+        vertical_angle = 180.0f;
       }
 
-      if( vertical_angle < -90.0f ) {
-        vertical_angle = -90.0f;
+      if( vertical_angle < -180.0f ) {
+        vertical_angle = -180.0f;
       }
+
+      Camera.RotateHorizontally(horizontal_angle);
+      Camera.RotateVertically(vertical_angle);
     }
   }
 
@@ -526,6 +578,25 @@ private:
     else
     {
       for(int i = 0; i < Models.size(); i++) vess[i]->UpdateStagingBufferThrust(false);
+    }
+
+    float angleS = 1.0f;
+
+    if(KeyState.dturn == true)
+    {
+      horizontal_angle += angleS;
+    }
+    if(KeyState.uturn == true)
+    {
+      horizontal_angle -= angleS;
+    }
+    if(KeyState.lturn == true)
+    {
+      vertical_angle += angleS;
+    }
+    if(KeyState.rturn == true)
+    {
+      vertical_angle -= angleS;
     }
   }
 

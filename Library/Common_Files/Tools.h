@@ -46,6 +46,11 @@ namespace VulkanCookbook {
 
   float Dot( Vector3 const & left,
              Vector3 const & right );
+             
+  float Length(Vector3 const& vec);
+
+  float AngleBetween(Vector3 const & left,
+    Vector3 const & right);
 
   Matrix4x4 Transpose(Matrix4x4 mat);
 

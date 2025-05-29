@@ -138,6 +138,26 @@ namespace VulkanCookbook {
       KeyState.thrust = true;
     }
 
+    if(key == 83)
+    {
+      KeyState.dturn = true;
+    }
+
+    if(key == 87)
+    {
+      KeyState.uturn = true;
+    }
+
+    if(key == 65)
+    {
+      KeyState.lturn = true;
+    }
+
+    if(key == 68)
+    {
+      KeyState.rturn = true;
+    }
+
     OnKeyEvent();
   }
 
@@ -146,6 +166,26 @@ namespace VulkanCookbook {
     if(key == 17)
     {
       KeyState.thrust = false;
+    }
+
+    if(key == 83)
+    {
+      KeyState.dturn = false;
+    }
+
+    if(key == 87)
+    {
+      KeyState.uturn = false;
+    }
+
+    if(key == 65)
+    {
+      KeyState.lturn = false;
+    }
+
+    if(key == 68)
+    {
+      KeyState.rturn = false;
     }
 
     OnKeyEvent();

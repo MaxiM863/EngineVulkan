@@ -69,6 +69,11 @@ namespace VulkanCookbook {
     return left[0] * right[0] + left[1] * right[1] + left[2] * right[2];
   }
 
+  float Length(Vector3 const &vec)
+  {
+      return sqrt(vec[0]*vec[0] + vec[1]*vec[1] + vec[2]*vec[2]);
+  }
+
   Matrix4x4 Inverse(Matrix4x4 m)
   {
     double inv[16], det;
@@ -208,24 +213,27 @@ namespace VulkanCookbook {
     return rep;
   }
 
-  Vector3 Transform(Vector3 v, Matrix4x4 m)
+  Vector3 Transform(Vector3 vec, Matrix4x4 mat)
   {
-        float result[4];
+    float result[4];
+    Vector3 res;
 
-        for ( int i = 0; i < 4; ++i )
-           result[i] = v[0] * m[i] + v[1] * m[i+4] + v[2] + m[i+8] + 1.0f * m[i+12];
+    for ( int i = 0; i < 4; ++i )
+        result[i] = vec[0] * mat[i] + vec[1] * mat[4+i] + vec[2] * mat[8+i] + 1.0f * mat[12+i];
 
-        result[0] = result[0]/result[3];
-        result[1] = result[1]/result[3];
-        result[2] = result[2]/result[3];
-        
-        Vector3 a;
-        a[0] = result[0];
-        a[1] = result[1];
-        a[2] = result[2];
+    res[0] = result[0]/result[3];
+    res[1] = result[1]/result[3];
+    res[2] = result[2]/result[3];
 
-        return a;    
+    return res;
   }
+
+  float AngleBetween(Vector3 const &left, Vector3 const &right)
+  {
+
+    return acos(Dot(left, right) / (Length(left) * Length(right)));
+  }
+ 
 
   Vector3 Cross( Vector3 const & left,
                  Vector3 const & right ) {
