@@ -85,13 +85,20 @@ public:
              } else {
             //     cout << "Received data: " << receiveBuffer << endl;
            
+                
                 char* str = new char[200];
                 strcpy_s(str, 200, receiveBuffer);
                 // Send the message with the string pointer in lParam
                 PostMessage(hWnd, USER_MESSAGE_SERVER_ON, 0, reinterpret_cast<LPARAM>(str));
+                }
             
-            }
         }
+    }
+
+    bool IsWindowFocused(HWND hwnd) {
+        // Get the handle of the currently focused (foreground) window
+        HWND foregroundWindow = GetForegroundWindow();
+        return hwnd == foregroundWindow;
     }
     
     bool sendMsg(char* msg)
@@ -100,14 +107,16 @@ public:
         //char buffer[5] = {'a','l','l','o', '\0'};
         //printf("Enter the message: ");
         //cin.getline(buffer,200);
-        int sbyteCount = send(clientSocket, msg, 200, 0);
-        if(sbyteCount == SOCKET_ERROR){
-            //cout << "Server send error: " << WSAGetLastError() << endl;
-            return 1;
-        } else {
-            //cout << "Server: sent" << sbyteCount << endl;
+        if(IsWindowFocused(hWnd))
+        {
+            int sbyteCount = send(clientSocket, msg, 200, 0);
+            if(sbyteCount == SOCKET_ERROR){
+                //cout << "Server send error: " << WSAGetLastError() << endl;
+                return 1;
+            } else {
+                //cout << "Server: sent" << sbyteCount << endl;
+            }
         }
-
         return 0;
     }
     

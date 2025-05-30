@@ -75,6 +75,7 @@ namespace VulkanCookbook {
     bool rturn;
     bool uturn;
     bool dturn;
+    bool rThrust;
 
     bool fire;
   };

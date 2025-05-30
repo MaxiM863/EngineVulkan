@@ -40,8 +40,7 @@ class vessel
 
   bool thrust;
 
-  Matrix4x4 position;
-  Vector3 ppos;
+  
 
   OrbitingCamera Camera;
 
@@ -50,6 +49,9 @@ class vessel
   bool UpdateUniformBuffer;
 
     public:
+
+        Matrix4x4 position;
+        Vector3 ppos;
 
         Matrix4x4 translationMatrix;
     
@@ -75,12 +77,12 @@ class vessel
 
         VkRenderPass getRenderPass() { return RenderPass.Object.Handle; };
     
-        bool Initialize(VkDevice LogicalDevice, VkPhysicalDevice PhysicalDevice, QueueParameters& GraphicsQueue, VkCommandBuffer& CommandBuffer, SwapchainParameters& Swapchain, Mesh m, OrbitingCamera Camera)
+        bool Initialize(VkDevice LogicalDevice, VkPhysicalDevice PhysicalDevice, QueueParameters& GraphicsQueue, VkCommandBuffer& CommandBuffer, SwapchainParameters& Swapchain, Mesh m, OrbitingCamera Camera, Vector3 posi)
         {
             thrust = false;
 
-            position = PrepareTranslationMatrix(0.0f,0.0f,-10.0f);
-            ppos = Vector3{0.0f,0.0f,-10.0f};
+            position = PrepareTranslationMatrix(posi[0], posi[1], posi[2]);
+            ppos = posi;
             
             uint32_t stride = 32;
         
@@ -465,7 +467,8 @@ class vessel
         
         bool UpdateStagingBufferThrust( bool thrust) {
     
-            this->thrust = thrust;
+            if(thrust) this->thrust = thrust;
+            else this->thrust = 0.0f;
 
             return true;
         }  

@@ -138,6 +138,11 @@ namespace VulkanCookbook {
       KeyState.thrust = true;
     }
 
+    if(key == 80)
+    {
+      KeyState.rThrust = true;
+    }
+
     if(key == 83)
     {
       KeyState.dturn = true;
@@ -163,6 +168,11 @@ namespace VulkanCookbook {
 
   void VulkanCookbookSampleBase::KeyboardOut(WPARAM key)
   {
+    if(key == 80)
+    {
+      KeyState.rThrust = false;
+    }
+
     if(key == 17)
     {
       KeyState.thrust = false;

@@ -12,7 +12,7 @@ using namespace std;
 std::vector<thread*> listThreads;
 std::vector<SOCKET> listSockets;
 
-void sendS(int s, std::string ss);
+void sendS(int s, char ss[]);
 
 void waitS(SOCKET acceptSocket, int i)
 {
@@ -40,12 +40,12 @@ void waitS(SOCKET acceptSocket, int i)
     }
 }
 
-void sendS(int i, std::string msg)
+void sendS(int i, char msg[])
 {
     //6. (b)  sending data
-    const char* buffer = msg.c_str();
+    //const char* buffer = msg.c_str();
 
-    int sbyteCount = send(listSockets[i], buffer, 200, 0);
+    int sbyteCount = send(listSockets[i], msg, 200, 0);
     
     if(sbyteCount == SOCKET_ERROR){
     

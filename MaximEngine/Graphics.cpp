@@ -8,6 +8,8 @@ class Graphics : public VulkanCookbook::VulkanCookbookSample
   sdlTextEngine*                      aas;
  
   vessel** vess;
+  vessel** enemy;
+
   std::vector<Mesh> Models;
 
   fume* fumee;
@@ -18,12 +20,17 @@ class Graphics : public VulkanCookbook::VulkanCookbookSample
 
   std::vector<ALuint> playlist;
 
-  
+  Client client;
   
 public:
 
+  char playerNbr = '0';
+
   float horizontal_angle = 0.0f;
   float vertical_angle = 0.0f;
+
+  float horizontal_angle2 = 0.0f;
+  float vertical_angle2 = 0.0f;
 
   HWND* hWnd;
 
@@ -56,7 +63,7 @@ public:
   }
 
 virtual bool Initialize( WindowParameters window_parameters, HWND hWnd ) override {
-
+ 
   
   alcMakeContextCurrent(context);
 
@@ -83,6 +90,8 @@ virtual bool Initialize( WindowParameters window_parameters, HWND hWnd ) overrid
 
     return false;
   }
+  
+  client.connectServer(hWnd);
 
   float pos_x0 = -0.15f;
   float pos_x1 = 0.15f;
@@ -110,7 +119,17 @@ virtual bool Initialize( WindowParameters window_parameters, HWND hWnd ) overrid
     
     vess[i] = new vessel();
  
-    vess[i]->Initialize(LogicalDevice.Object.Handle, PhysicalDevice, GraphicsQueue, FramesResources.front().CommandBuffer[0], Swapchain, Models[i], Camera);
+    vess[i]->Initialize(LogicalDevice.Object.Handle, PhysicalDevice, GraphicsQueue, FramesResources.front().CommandBuffer[0], Swapchain, Models[i], Camera, {-10.0f, 0.0f, -10.0f});
+  }
+
+  enemy = new vessel*[Models.size()];
+
+  for(int i = 0 ; i < Models.size(); i++)
+  {
+    
+    enemy[i] = new vessel();
+ 
+    enemy[i]->Initialize(LogicalDevice.Object.Handle, PhysicalDevice, GraphicsQueue, FramesResources.front().CommandBuffer[0], Swapchain, Models[i], Camera, {10.0f, 0.0f, -10.0f});
   }
   
   fumee = new fume();
@@ -224,6 +243,33 @@ virtual bool Draw() override {
         CopyDataBetweenBuffers( command_buffer[0], vess[i]->getStagingBuffer(), vess[i]->getUniformBuffer(), regions );
 
         BufferTransition post_transfer_transition = {
+          vess[i]->getUniformBuffer(),               // VkBuffer         Buffer
+          VK_ACCESS_TRANSFER_WRITE_BIT, // VkAccessFlags    CurrentAccess
+          VK_ACCESS_UNIFORM_READ_BIT,   // VkAccessFlags    NewAccess
+          VK_QUEUE_FAMILY_IGNORED,      // uint32_t         CurrentQueueFamily
+          VK_QUEUE_FAMILY_IGNORED       // uint32_t         NewQueueFamily
+        };
+        SetBufferMemoryBarrier( command_buffer[0], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT, { post_transfer_transition } );
+
+        pre_transfer_transition = {
+          enemy[i]->getUniformBuffer(),               // VkBuffer         Buffer
+          VK_ACCESS_UNIFORM_READ_BIT,   // VkAccessFlags    CurrentAccess
+          VK_ACCESS_TRANSFER_WRITE_BIT, // VkAccessFlags    NewAccess
+          VK_QUEUE_FAMILY_IGNORED,      // uint32_t         CurrentQueueFamily
+          VK_QUEUE_FAMILY_IGNORED       // uint32_t         NewQueueFamily
+        };
+        SetBufferMemoryBarrier( command_buffer[0], VK_PIPELINE_STAGE_VERTEX_SHADER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, { pre_transfer_transition } );
+
+        regions = {
+          {
+            0,                        // VkDeviceSize     srcOffset
+            0,                        // VkDeviceSize     dstOffset
+            3 * 16 * sizeof( float )  // VkDeviceSize     size
+          }
+        };
+        CopyDataBetweenBuffers( command_buffer[0], enemy[i]->getStagingBuffer(), enemy[i]->getUniformBuffer(), regions );
+
+        post_transfer_transition = {
           vess[i]->getUniformBuffer(),               // VkBuffer         Buffer
           VK_ACCESS_TRANSFER_WRITE_BIT, // VkAccessFlags    CurrentAccess
           VK_ACCESS_UNIFORM_READ_BIT,   // VkAccessFlags    NewAccess
@@ -481,6 +527,24 @@ virtual bool Draw() override {
       }
     }
 
+    BindPipelineObject( command_buffer[0], VK_PIPELINE_BIND_POINT_GRAPHICS, enemy[0]->getGraphicsPipeline() );
+    
+    for(int i = 0; i < Models.size(); i++)
+    {
+
+      BindVertexBuffers( command_buffer[0], 0, { { enemy[i]->getVertexBuffer(), 0 } } );
+
+      BindDescriptorSets( command_buffer[0], VK_PIPELINE_BIND_POINT_GRAPHICS, enemy[i]->getPipelineLayout(), 0, enemy[i]->getDescriptorSet(), {} );
+
+
+      BindPipelineObject( command_buffer[0], VK_PIPELINE_BIND_POINT_GRAPHICS, enemy[i]->getGraphicsPipeline() );
+
+      for( size_t ii = 0; ii < enemy[i]->getMesh().Parts.size(); ++ii ) {
+        
+        DrawGeometry( command_buffer[0], enemy[i]->getMesh().Parts.at(0).VertexCount, 1, 0, 0 );
+      }
+    }
+
     BindPipelineObject( command_buffer[0], VK_PIPELINE_BIND_POINT_GRAPHICS, aas->getGraphicsPipeline() );
 
     BindDescriptorSets( command_buffer[0], VK_PIPELINE_BIND_POINT_GRAPHICS, aas->getPipelineLayout(), 0, aas->getDescriptorSet(), {} );
@@ -515,8 +579,7 @@ virtual bool Draw() override {
     }
 
     for(int i = 0; i < Models.size(); i++) vess[i]->UpdateStagingBuffer( false, LogicalDevice.Object.Handle, static_cast<float>(Swapchain.Size.width) / static_cast<float>(Swapchain.Size.height), vertical_angle, horizontal_angle, Camera);
-
-    
+    for(int i = 0; i < Models.size(); i++) enemy[i]->UpdateStagingBuffer( false, LogicalDevice.Object.Handle, static_cast<float>(Swapchain.Size.width) / static_cast<float>(Swapchain.Size.height), vertical_angle2, horizontal_angle2, Camera);    
 
     
     fumee->UpdateStagingBuffer(true, LogicalDevice.Object.Handle, static_cast<float>(Swapchain.Size.width) / static_cast<float>(Swapchain.Size.height), MouseState.Position.Delta.X, MouseState.Position.Delta.Y, Camera);
@@ -571,9 +634,24 @@ private:
 
   void OnKeyEvent() {
 
-    if(KeyState.thrust == true)
+    char* dddf = new char[200];
+
+    char destination = '0';
+    if(playerNbr == '0') destination = '1';
+
+    dddf[0] = destination;
+
+    dddf[1] = '0';
+    dddf[2] = '0';
+    dddf[3] = '0';
+    dddf[4] = '0';
+    dddf[5] = '0';
+    dddf[6] = '\0';
+
+    if(KeyState.thrust == true || KeyState.rThrust)
     {
       for(int i = 0; i < Models.size(); i++) vess[i]->UpdateStagingBufferThrust(true);
+      dddf[1] = '1';
     }
     else
     {
@@ -584,25 +662,63 @@ private:
 
     if(KeyState.dturn == true)
     {
+      dddf[2] = '1';
       horizontal_angle += angleS;
     }
     if(KeyState.uturn == true)
     {
+      dddf[3] = '1';
       horizontal_angle -= angleS;
     }
     if(KeyState.lturn == true)
     {
+      dddf[4] = '1';
       vertical_angle += angleS;
     }
     if(KeyState.rturn == true)
     {
+      dddf[5] = '1';
       vertical_angle -= angleS;
-    }
+    }   
+    
+
+    client.sendMsg(dddf);
   }
 
   void OnServerEvent() {
 
-    int a = 0;
+    char* data = ServerState.data;
+
+    if(data[0] == playerNbr)
+    {
+      float angleS = 1.0f;
+
+      if(data[1] == '1')
+      {
+        for(int i = 0; i < Models.size(); i++) enemy[i]->UpdateStagingBufferThrust(true);
+      }
+      else
+      {
+        for(int i = 0; i < Models.size(); i++) enemy[i]->UpdateStagingBufferThrust(false);
+      }
+      
+      if(data[2] == '1')
+      {
+        horizontal_angle2 -= angleS;
+      }
+      if(data[3] == '1')
+      {
+        horizontal_angle2 += angleS;
+      }
+      if(data[4] == '1')
+      {
+        vertical_angle2 -= angleS;
+      }
+      if(data[5] == '1')
+      {
+        vertical_angle2 += angleS;
+      }
+    }
   }
 
   
