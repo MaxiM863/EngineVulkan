@@ -1,0 +1,69 @@
+import bpy
+import bmesh
+
+def triangulate_object(obj):
+    me = obj.data
+    # Get a BMesh representation
+    bm = bmesh.new()
+    bm.from_mesh(me)
+
+    bmesh.ops.triangulate(bm, faces=bm.faces[:])
+    # V2.79 : bmesh.ops.triangulate(bm, faces=bm.faces[:], quad_method=0, ngon_method=0)
+
+    # Finish up, write the bmesh back to the mesh
+    bm.to_mesh(me)
+    bm.free()
+    
+save_to_file = 'F:/BlenderAssetsMaximEngine/vessel_0.txt'
+ 
+cntr = 0 
+ 
+with open(save_to_file, 'w') as file:
+    
+    file.write(str(len(bpy.data.scenes['Scene'].objects)) + '\n')
+    
+    for i in bpy.data.scenes['Scene'].objects:
+                
+        if(i.type == 'MESH'):
+            
+            file.write(str(cntr) + '\n')
+            cntr = cntr + 1
+            
+            triangulate_object(i)
+            
+            mat = i.matrix_world
+                
+            
+                      
+            for vert in i.data.vertices:
+                
+                vertf = mat @ vert.co
+                
+                file.write(str(vertf.x) + ' ' + str(vertf.y) + ' ' + str(vertf.z) + ' ')    
+            
+                        
+            file.write('\n')
+            
+            for vert in i.data.vertices:
+                
+                vertf = vert.normal
+                
+                file.write(str(vertf.x) + ' ' + str(vertf.y) + ' ' + str(vertf.z) + ' ')             
+                     
+            file.write('\n')
+                 
+            for vert in i.data.polygons:
+                
+                vertf = vert.vertices
+                
+                file.write(str(vertf[0]) + ' ' + str(vertf[1]) + ' ' + str(vertf[2]) + ' ')
+                
+            file.write('\n')
+                
+        if(i.name == 'weapon'):
+            
+            file.write('GUN: ' + str(i.location.x) + ' ' + str(i.location.y) + ' ' + str(i.location.z))
+                  
+    file.write('\n')
+
+file.close()
