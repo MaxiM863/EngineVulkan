@@ -40,12 +40,12 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(glm)
 
-
+find_package(Vulkan REQUIRED)
 
 if(WIN32)
     
     add_definitions(-DVK_USE_PLATFORM_WIN32_KHR)
-    target_link_libraries(EngineMaxim PUBLIC Cookbook OpenAL::OpenAL wsock32 ws2_32)
+    target_link_libraries(EngineMaxim PUBLIC Cookbook OpenAL::OpenAL wsock32 ws2_32 Vulkan::Vulkan)
 
     add_custom_command(TARGET ${PROJECT_NAME}  POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
