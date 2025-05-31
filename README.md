@@ -5,6 +5,12 @@
 
 Basic engine of Maxim Thibodeau
 
+* install Vulkan [**Vulkan**](https://vulkan.lunarg.com/sdk/home#windows) - SDK Vulkan pour votre platforme.
+
+* install cmake [**CMake**](https://cmake.org/download/) - Cmake install pour votre platforme.
+
+* Use VisualCode build launch
+
 <hr>
 
 ## Credits
