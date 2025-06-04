@@ -19,3 +19,5 @@
 #include <AL/alc.h>
 
 #include "MaximStar/Client.hpp"
+
+#include "StarshipClass.hpp"

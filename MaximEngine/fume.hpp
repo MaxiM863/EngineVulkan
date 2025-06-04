@@ -1,3 +1,6 @@
+#ifndef FUMEE
+#define FUMEE
+
 #include "CookbookSampleFramework.h"
 #include "OrbitingCamera.h"
 
@@ -566,3 +569,5 @@ class fume
     return true;
   }
 };
+
+#endif
