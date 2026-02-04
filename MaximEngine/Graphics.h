@@ -20,4 +20,4 @@
 
 #include "MaximStar/Client.hpp"
 
-#include "StarshipClass.hpp"
+#include "map.hpp"

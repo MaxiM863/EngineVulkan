@@ -10,7 +10,8 @@
                 "${workspaceFolder}/External",
                 "${workspaceFolder}/MaximEngine",
                 "${workspaceFolder}/build/_deps/sfml-src/include",
-                "${workspaceFolder}/build/_deps/openal-lib-src/include"
+                "${workspaceFolder}/build/_deps/openal-lib-src/include",
+                "${workspaceFolder}/build/_deps/glm-src"
             ],
             "defines": [
                 "_DEBUG",

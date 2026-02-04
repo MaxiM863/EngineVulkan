@@ -77,6 +77,8 @@ class sdlTextEngine
         std::vector<VkDescriptorSet> getDescriptorSet() { return DescriptorSets; };
 
         VkBuffer getVertexBuffer() { return VertexBuffer.Object.Handle; };
+
+        VkRenderPass getRenderPass() { return RenderPass.Object.Handle; };
     
         sdlTextEngine(){};   
     

@@ -44,8 +44,7 @@ public:
 
   ALfloat* state = new float;
         
-  Starship starship_P;
-  Starship starship_E;
+  MAP map1;
 
   ~Graphics() {
 
@@ -84,7 +83,7 @@ virtual bool Initialize( WindowParameters window_parameters, HWND hWnd ) overrid
     return false;
   }
   
-  client.connectServer(hWnd);
+  //client.connectServer(hWnd);
 
   float pos_x0 = -0.15f;
   float pos_x1 = 0.15f;
@@ -93,12 +92,11 @@ virtual bool Initialize( WindowParameters window_parameters, HWND hWnd ) overrid
   
   aas = new sdlTextEngine();
 
-  aas->Initialize("ASDW + rCntrl", 150, 0x00FF0000, 0x00FFFFFF, pos_x0, pos_x1, pos_y0, pos_y1, 1000, 200, LogicalDevice.Object.Handle, PhysicalDevice, GraphicsQueue, FramesResources.front().CommandBuffer[0], Swapchain);
+  aas->Initialize("Demo-1", 150, 0x00FF0000, 0x00FFFFFF, pos_x0, pos_x1, pos_y0, pos_y1, 1000, 200, LogicalDevice.Object.Handle, PhysicalDevice, GraphicsQueue, FramesResources.front().CommandBuffer[0], Swapchain);
 
-  Camera = OrbitingCamera( Vector3{ 0.0f, 0.0f, 0.0f }, 50.0f );
+  Camera = OrbitingCamera( Vector3{ 0.0f, 0.0f, 0.0f }, 5.0f );
 
-  starship_P.Initialize(LogicalDevice.Object.Handle, PhysicalDevice, GraphicsQueue, FramesResources.front().CommandBuffer[0], Swapchain, Camera, {10.0f, 0.0f, -10.0f});
-  starship_E.Initialize(LogicalDevice.Object.Handle, PhysicalDevice, GraphicsQueue, FramesResources.front().CommandBuffer[0], Swapchain, Camera, {-10.0f, 0.0f, -10.0f});
+  map1.Initialize( LogicalDevice.Object.Handle, PhysicalDevice, GraphicsQueue, FramesResources.front().CommandBuffer[0], Swapchain, Mesh(), Camera, Vector3{0.0f,10.0f,0.0f} );
 
   return true;
 }
@@ -153,10 +151,9 @@ virtual bool Draw() override {
 
     
 
-    ///////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////// DRAW-1 OBJECTS HERE
 
-    starship_P.Draw_1(command_buffer[0], TimerState, buffer, source, swapchain_image_index);
-    starship_E.Draw_1(command_buffer[0], TimerState, buffer, source, swapchain_image_index);
+    map1.Draw_1(command_buffer[0], TimerState, source, buffer, swapchain_image_index);
 
     ///////////////////
 
@@ -177,10 +174,11 @@ virtual bool Draw() override {
     
 
     // Drawing
-    BeginRenderPass( command_buffer[0], starship_P.GetRenderPass(), framebuffer, { { 0, 0 }, Swapchain.Size }, { { 0.0f, 0.0f, 0.0f, 1.0f }, { 1.0f, 0 } }, VK_SUBPASS_CONTENTS_INLINE );
+    BeginRenderPass( command_buffer[0], map1.getRenderPass(), framebuffer, { { 0, 0 }, Swapchain.Size }, { { 0.0f, 0.0f, 0.0f, 1.0f }, { 1.0f, 0 } }, VK_SUBPASS_CONTENTS_INLINE );
 
-    starship_P.Draw_2(LogicalDevice.Object.Handle, command_buffer[0], Swapchain, swapchain_image_index, vertical_angle, horizontal_angle, Camera, MouseState);
-    starship_E.Draw_2(LogicalDevice.Object.Handle, command_buffer[0], Swapchain, swapchain_image_index, vertical_angle, horizontal_angle, Camera, MouseState);
+    // Draw-2 OBJECTS HERE
+
+    map1.Draw_2( *LogicalDevice, command_buffer[0], Swapchain, swapchain_image_index, vertical_angle, horizontal_angle, Camera, MouseState );
 
     BindPipelineObject( command_buffer[0], VK_PIPELINE_BIND_POINT_GRAPHICS, aas->getGraphicsPipeline() );
 
@@ -188,11 +186,7 @@ virtual bool Draw() override {
 
     BindVertexBuffers( command_buffer[0], 0, { { aas->getVertexBuffer(), 0 } } );
 
-    DrawGeometry( command_buffer[0], 4, 1, 0, 0 );
-
-
-
-    
+    DrawGeometry( command_buffer[0], 4, 1, 0, 0 );   
 
     ///////////////////////////////////////////////////////
     EndRenderPass( command_buffer[0] );
@@ -219,7 +213,7 @@ virtual bool Draw() override {
   };
 
   return IncreasePerformanceThroughIncreasingTheNumberOfSeparatelyRenderedFrames( *LogicalDevice, GraphicsQueue.Handle, PresentQueue.Handle,
-    *Swapchain.Handle, Swapchain.Size, Swapchain.ImageViewsRaw, starship_P.GetRenderPass(), {}, prepare_frame, FramesResources );
+    *Swapchain.Handle, Swapchain.Size, Swapchain.ImageViewsRaw, aas->getRenderPass(), {}, prepare_frame, FramesResources );
 }
 
 
@@ -282,8 +276,7 @@ private:
 
     float angleS = 1.0f;
 
-    if(KeyState.thrust || KeyState.rThrust) starship_P.setThrust(true, dddf[1]);
-    else starship_P.setThrust(false, dddf[1]);
+    
 
     if(KeyState.dturn == true)
     {
@@ -318,8 +311,6 @@ private:
     {
       float angleS = 1.0f;
 
-      if(data[1] == '1') starship_E.setThrust(true, data[1]);
-      else starship_E.setThrust(false, data[1]);
       
       if(data[2] == '1')
       {

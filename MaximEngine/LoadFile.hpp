@@ -1,3 +1,7 @@
+#ifndef LOADFILE_HPP
+#define LOADFILE_HPP
+
+
 #include <string>
 #include <fstream>
 #include <iostream>
@@ -170,4 +174,51 @@ class Load {
 
         return true;
     }
+
+    public: float* Load3DModelFromBinFile(std::string filename, long long& size) {
+
+        
+        //if (!file) {
+            /*std::cerr << "Unable to open file\nCreating it...\n";
+
+            Mesh m;
+
+            std::ofstream fileOut(filename.substr(0, filename.find_last_of('.')) + ".bin",  std::ios::binary);
+            
+            Load3DModelFromObjFile("Data/Models/map.obj", true, true, false, false, m);
+
+            // Write mesh data to the file
+            fileOut.write(reinterpret_cast<const char*>(m.Data.data()), m.Data.size() * sizeof(float));
+
+            fileOut.close();*/
+        //}
+        size = getFileSize(filename);
+
+        std::ifstream file(filename, std::ios::binary);
+        
+        float* mesh = new float[size / sizeof(float)];
+
+        file.read(reinterpret_cast<char*>(&mesh[0]), size);
+
+        file.close();
+
+        float test = mesh[0];
+
+        return mesh;
+    }
+
+    std::streamsize getFileSize(const std::string& filename) {
+        std::ifstream file(filename, std::ios::binary | std::ios::ate); // open at end
+        if (!file) {
+            throw std::runtime_error("Cannot open file: " + filename);
+        }
+
+        long long size = file.tellg(); // position at end = size
+        
+        file.close();
+        
+        return size;
+    }
 };
+
+#endif // LOADFILE_HPP

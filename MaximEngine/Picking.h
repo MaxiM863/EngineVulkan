@@ -38,6 +38,8 @@ std::optional<VulkanCookbook::Vector3> ray_intersects_triangle( const VulkanCook
 
     for(int i = 0; i < nbrTriangles; i++)
     {
+
+        // à être optimiser: dans la game loop
         TriangleGLM triangle2;
 
         triangle2.a[0] = mesh[42*i+0];
