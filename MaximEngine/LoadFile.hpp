@@ -179,18 +179,18 @@ class Load {
 
         
         //if (!file) {
-            /*std::cerr << "Unable to open file\nCreating it...\n";
+            std::cerr << "Unable to open file\nCreating it...\n";
 
             Mesh m;
 
             std::ofstream fileOut(filename.substr(0, filename.find_last_of('.')) + ".bin",  std::ios::binary);
             
-            Load3DModelFromObjFile("Data/Models/map.obj", true, true, false, false, m);
+            Load3DModelFromObjFile("Data/Models/cube.obj", true, true, false, false, m);
 
             // Write mesh data to the file
             fileOut.write(reinterpret_cast<const char*>(m.Data.data()), m.Data.size() * sizeof(float));
 
-            fileOut.close();*/
+            fileOut.close();
         //}
         size = getFileSize(filename);
 

@@ -1,11 +1,14 @@
 //Refer ServerCreation.md for detail infos
 
 #include <iostream>
+#include <vector>
+#include <thread>
+
+#ifdef VK_USE_PLATFORM_WIN32_KHR
+
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <tchar.h>
-#include <vector>
-#include <thread>
 
 using namespace std;
 
@@ -139,3 +142,5 @@ int main(){
         }
     }
 }
+
+#endif

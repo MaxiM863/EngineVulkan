@@ -35,9 +35,10 @@
 // Recipe:  02 Rendering a geometry with fragment specular lighting
 
 
-
+#ifdef VK_USE_PLATFORM_WIN32_KHR
 #include <WinSock2.h>
 #include <ws2tcpip.h>
+#endif
 
 #include "CookbookSampleFramework.h"
 #include "Graphics.cpp"
@@ -83,7 +84,7 @@ int main(int argc, char* argv[]) {
 		engine.playerNbr = '1';
 	}
 
-	WindowFramework window("Maxim Engine 1_0", 500, 500, 1000, 1000, engine);
+	WindowFramework window("Maxim Engine 1_0", 500, 500, 500, 500, engine);
 
 	window.Render();
 

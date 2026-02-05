@@ -137,9 +137,9 @@ class MAP
         
         long long size = 0;
         
-        float* data = Load3D.Load3DModelFromBinFile( "Data/Models/map.bin", size );
+        float* data = Load3D.Load3DModelFromBinFile( "Data/Models/cube.bin", size );
 
-        Model.Parts.push_back({0, static_cast<uint32_t>(size / (sizeof(float) * (stride / sizeof(float))))});
+        Model.Parts.push_back({0, static_cast<uint32_t>(size / sizeof(float))});
 
         InitVkDestroyer( LogicalDevice, VertexBuffer );
         if( !CreateBuffer( LogicalDevice, size,
@@ -520,7 +520,7 @@ class MAP
         return true;
         }
 
-        bool Draw_1(VkCommandBuffer command_buffer, TimerStateParameters TimerState, ALuint* buffer, ALuint* source, int swapchain_image_index)
+        bool Draw_1(VkCommandBuffer command_buffer, TimerStateParameters TimerState, int swapchain_image_index)
     {
         if( true ) {
       

@@ -6,11 +6,6 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 include_directories(/MaximEngine/)
-include_directories(/Serveur/)
-
-add_executable(testServer main.cpp)
-
 
 add_subdirectory(Cookbook)
 add_subdirectory(MaximEngine)
-add_subdirectory(Serveur)

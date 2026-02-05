@@ -131,8 +131,9 @@ namespace VulkanCookbook {
     OnServerEvent();
   }
 
-  void VulkanCookbookSampleBase::KeyboardIn(WPARAM key)
+  void VulkanCookbookSampleBase::KeyboardIn()
   {
+    /*
     if(key == 17)
     {
       KeyState.thrust = true;
@@ -163,11 +164,12 @@ namespace VulkanCookbook {
       KeyState.rturn = true;
     }
 
-    OnKeyEvent();
+    OnKeyEvent();*/
   }
 
-  void VulkanCookbookSampleBase::KeyboardOut(WPARAM key)
+  void VulkanCookbookSampleBase::KeyboardOut()
   {
+    /*
     if(key == 80)
     {
       KeyState.rThrust = false;
@@ -198,7 +200,7 @@ namespace VulkanCookbook {
       KeyState.rturn = false;
     }
 
-    OnKeyEvent();
+    OnKeyEvent();*/
   }
 
   bool VulkanCookbookSampleBase::IsReady() {

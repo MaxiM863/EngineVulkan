@@ -5,13 +5,13 @@ using namespace VulkanCookbook;
 class Graphics : public VulkanCookbook::VulkanCookbookSample
 {
 
-  sdlTextEngine*                      aas;
+  //sdlTextEngine*                      aas;
  
   bool UpdateUniformBuffer;
 
-  std::vector<ALuint> playlist;
+  //std::vector<ALuint> playlist;
 
-  Client client;
+  //Client client;
   
 public:
 
@@ -23,12 +23,13 @@ public:
   float horizontal_angle2 = 0.0f;
   float vertical_angle2 = 0.0f;
 
-  HWND* hWnd;
+  //HWND* hWnd;
 
   OrbitingCamera Camera;
 
   Matrix4x4 additiveRotation;
 
+  /*
   std::vector<char> loadWAV(const std::string& filename, ALenum& format, ALsizei& freq) {
     // Simplified WAV loading logic (use a library like dr_wav for production)
     std::ifstream file(filename, std::ios::binary);
@@ -43,21 +44,25 @@ public:
   ALCcontext* context = alcCreateContext(device, nullptr);
 
   ALfloat* state = new float;
-        
-  MAP map1;
+    */    
+  //MAP map1;
+
+  Starship vessel1;
 
   ~Graphics() {
 
+    /*
     alDeleteSources(20, &source[0]);
     alDeleteBuffers(1, &buffer[0]);
     alcDestroyContext(context);
     alcCloseDevice(device);
+    */
   }
 
-virtual bool Initialize( WindowParameters window_parameters, HWND hWnd ) override {
+virtual bool Initialize( WindowParameters window_parameters ) override {
  
   
-  alcMakeContextCurrent(context);
+  /*alcMakeContextCurrent(context);
 
   source = new ALuint[21];
   buffer = new ALuint[2];
@@ -76,7 +81,7 @@ virtual bool Initialize( WindowParameters window_parameters, HWND hWnd ) overrid
   alSourcei(source[20], AL_BUFFER, buffer[1]);
   alSourcePlay(source[20]);
   
-  *state = 0.6f;
+  *state = 0.6f;*/
   
   if( !InitializeVulkan( window_parameters, nullptr, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, false ) ) {
 
@@ -90,13 +95,13 @@ virtual bool Initialize( WindowParameters window_parameters, HWND hWnd ) overrid
   float pos_y0 = 0.80f;
   float pos_y1 = 0.86f;
   
-  aas = new sdlTextEngine();
+  //aas = new sdlTextEngine();
 
-  aas->Initialize("Demo-1", 150, 0x00FF0000, 0x00FFFFFF, pos_x0, pos_x1, pos_y0, pos_y1, 1000, 200, LogicalDevice.Object.Handle, PhysicalDevice, GraphicsQueue, FramesResources.front().CommandBuffer[0], Swapchain);
+  //aas->Initialize("Demo-1", 150, 0x00FF0000, 0x00FFFFFF, pos_x0, pos_x1, pos_y0, pos_y1, 1000, 200, LogicalDevice.Object.Handle, PhysicalDevice, GraphicsQueue, FramesResources.front().CommandBuffer[0], Swapchain);
 
-  Camera = OrbitingCamera( Vector3{ 0.0f, 0.0f, 0.0f }, 5.0f );
+  Camera = OrbitingCamera( Vector3{ 0.0f, 0.0f, 0.0f }, 50.0f );
 
-  map1.Initialize( LogicalDevice.Object.Handle, PhysicalDevice, GraphicsQueue, FramesResources.front().CommandBuffer[0], Swapchain, Mesh(), Camera, Vector3{0.0f,10.0f,0.0f} );
+  vessel1.Initialize( LogicalDevice.Object.Handle, PhysicalDevice, GraphicsQueue, FramesResources.front().CommandBuffer[0], Swapchain, Camera, Vector3{0.0f,10.0f,0.0f} );
 
   return true;
 }
@@ -153,7 +158,7 @@ virtual bool Draw() override {
 
     /////////////////////////////////////////////////////// DRAW-1 OBJECTS HERE
 
-    map1.Draw_1(command_buffer[0], TimerState, source, buffer, swapchain_image_index);
+    vessel1.Draw_1(command_buffer[0], TimerState, swapchain_image_index);
 
     ///////////////////
 
@@ -174,20 +179,20 @@ virtual bool Draw() override {
     
 
     // Drawing
-    BeginRenderPass( command_buffer[0], map1.getRenderPass(), framebuffer, { { 0, 0 }, Swapchain.Size }, { { 0.0f, 0.0f, 0.0f, 1.0f }, { 1.0f, 0 } }, VK_SUBPASS_CONTENTS_INLINE );
+    BeginRenderPass( command_buffer[0], vessel1.GetRenderPass(), framebuffer, { { 0, 0 }, Swapchain.Size }, { { 0.0f, 0.0f, 0.0f, 1.0f }, { 1.0f, 0 } }, VK_SUBPASS_CONTENTS_INLINE );
 
     // Draw-2 OBJECTS HERE
 
-    map1.Draw_2( *LogicalDevice, command_buffer[0], Swapchain, swapchain_image_index, vertical_angle, horizontal_angle, Camera, MouseState );
+    vessel1.Draw_2( *LogicalDevice, command_buffer[0], Swapchain, swapchain_image_index, vertical_angle, horizontal_angle, Camera, MouseState );
 
-    BindPipelineObject( command_buffer[0], VK_PIPELINE_BIND_POINT_GRAPHICS, aas->getGraphicsPipeline() );
+    /*BindPipelineObject( command_buffer[0], VK_PIPELINE_BIND_POINT_GRAPHICS, aas->getGraphicsPipeline() );
 
     BindDescriptorSets( command_buffer[0], VK_PIPELINE_BIND_POINT_GRAPHICS, aas->getPipelineLayout(), 0, aas->getDescriptorSet(), {} );
 
     BindVertexBuffers( command_buffer[0], 0, { { aas->getVertexBuffer(), 0 } } );
 
     DrawGeometry( command_buffer[0], 4, 1, 0, 0 );   
-
+*/
     ///////////////////////////////////////////////////////
     EndRenderPass( command_buffer[0] );
 
@@ -213,7 +218,7 @@ virtual bool Draw() override {
   };
 
   return IncreasePerformanceThroughIncreasingTheNumberOfSeparatelyRenderedFrames( *LogicalDevice, GraphicsQueue.Handle, PresentQueue.Handle,
-    *Swapchain.Handle, Swapchain.Size, Swapchain.ImageViewsRaw, aas->getRenderPass(), {}, prepare_frame, FramesResources );
+    *Swapchain.Handle, Swapchain.Size, Swapchain.ImageViewsRaw, vessel1.GetRenderPass(), {}, prepare_frame, FramesResources );
 }
 
 
@@ -300,7 +305,7 @@ private:
     }   
     
 
-    client.sendMsg(dddf);
+    //client.sendMsg(dddf);
   }
 
   void OnServerEvent() {

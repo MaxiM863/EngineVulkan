@@ -1,8 +1,6 @@
 #include "fume.hpp"
 #include "vessel.hpp"
 
-#include <AL/al.h>
-#include <AL/alc.h>
 
 using namespace VulkanCookbook;
 
@@ -73,7 +71,7 @@ class Starship {
         }  
     }
 
-    bool Draw_1(VkCommandBuffer command_buffer, TimerStateParameters TimerState, ALuint* buffer, ALuint* source, int swapchain_image_index)
+    bool Draw_1(VkCommandBuffer command_buffer, TimerStateParameters TimerState, int swapchain_image_index)
     {
         if( true ) {
       
@@ -167,8 +165,8 @@ class Starship {
       
               fumee->Bilboards.Parts[0].VertexCount--;
               
-              alSourcei(source[i], AL_BUFFER, buffer[0]);
-              alSourcePlay(source[i]); 
+              //alSourcei(source[i], AL_BUFFER, buffer[0]);
+              //alSourcePlay(source[i]); 
             }
             else
             {

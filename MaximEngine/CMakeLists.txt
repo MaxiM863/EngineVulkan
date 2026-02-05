@@ -19,16 +19,17 @@ target_sources(EngineMaxim PRIVATE
 "../Samples/Common_Files/CookbookSampleFramework.cpp"
 "../Samples/Common_Files/OrbitingCamera.cpp")
 
+#[[
+//include(FetchContent)
 
-include(FetchContent)
+//FetchContent_Declare(
+//    OpenAL-lib
+//    GIT_REPOSITORY https://github.com/kcat/openal-soft.git
+//    GIT_TAG makemhr        
+//)
 
-FetchContent_Declare(
-    OpenAL-lib
-    GIT_REPOSITORY https://github.com/kcat/openal-soft.git
-    GIT_TAG makemhr        
-)
-
-FetchContent_MakeAvailable(OpenAL-lib)
+//FetchContent_MakeAvailable(OpenAL-lib)
+]]
 
 include(FetchContent)
 
@@ -77,7 +78,7 @@ if(UNIX)
 
     add_custom_command(TARGET ${PROJECT_NAME}  POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
-                ${CMAKE_CURRENT_SOURCE_DIR}/Data
+                ${CMAKE_CURRENT_SOURCE_DIR}/../Data
                 ${CMAKE_CURRENT_BINARY_DIR}/Data)
 
 endif(UNIX)
