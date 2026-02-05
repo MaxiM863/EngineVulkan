@@ -151,7 +151,7 @@ namespace VulkanCookbook {
 
   void WindowFramework::Render() {
     if( Created &&
-        Sample.Initialize( WindowParams, WindowParams.HWnd ) ) {
+        Sample.Initialize( WindowParams ) ) {
 
       ShowWindow( WindowParams.HWnd, SW_SHOWNORMAL );
       UpdateWindow( WindowParams.HWnd );
@@ -177,13 +177,13 @@ namespace VulkanCookbook {
           }
           case USER_MESSAGE_KEY_ON:
           {
-            Sample.KeyboardIn(message.wParam);
+            Sample.KeyboardIn();
 
             break;
           }
           case USER_MESSAGE_KEY_OFF:
           {
-            Sample.KeyboardOut(message.wParam);
+            Sample.KeyboardOut();
 
             break;
           }
